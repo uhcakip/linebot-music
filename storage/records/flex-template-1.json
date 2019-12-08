@@ -1,0 +1,97 @@
+{
+    "type": "bubble",
+    "hero": {
+        "type": "image",
+        "url": "https://i.kfs.io/album/global/44323445,1v1/fit/500x500.jpg",
+        "size": "full",
+        "aspectRatio": "25:25",
+        "aspectMode": "cover",
+        "action": {
+            "type": "uri",
+            "uri": "http://linecorp.com/"
+        },
+        "gravity": "top"
+    },
+    "body": {
+        "type": "box",
+        "layout": "vertical",
+        "contents": [
+            {
+                "type": "text",
+                "text": "怪美的",
+                "weight": "bold",
+                "size": "xl"
+            },
+            {
+                "type": "box",
+                "layout": "vertical",
+                "margin": "lg",
+                "spacing": "sm",
+                "contents": [
+                    {
+                        "type": "box",
+                        "layout": "baseline",
+                        "spacing": "sm",
+                        "contents": [
+                            {
+                                "type": "text",
+                                "text": "專輯",
+                                "color": "#aaaaaa",
+                                "size": "sm",
+                                "flex": 1
+                            },
+                            {
+                                "type": "text",
+                                "text": "Ugly Beauty",
+                                "wrap": true,
+                                "color": "#666666",
+                                "size": "sm",
+                                "flex": 5
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    "footer": {
+        "type": "box",
+        "layout": "horizontal",
+        "spacing": "sm",
+        "contents": [
+            {
+                "type": "button",
+                "action": {
+                    "type": "uri",
+                    "label": "試聽",
+                    "uri": "http://linecorp.com/"
+                },
+                "flex": 1,
+                "position": "relative",
+                "style": "link",
+                "offsetTop": "-5px"
+            },
+            {
+                "type": "separator"
+            },
+            {
+                "type": "button",
+                "action": {
+                    "type": "uri",
+                    "label": "詳細資訊",
+                    "uri": "http://linecorp.com/"
+                },
+                "position": "relative",
+                "flex": 1,
+                "style": "link",
+                "offsetTop": "-5px"
+            }
+        ],
+        "paddingBottom": "0px"
+    },
+    "styles": {
+        "footer": {
+            "separator": true
+        }
+    }
+}
