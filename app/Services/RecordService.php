@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Repos\RecordRepo;
 use Exception;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Log;
@@ -11,12 +12,16 @@ use LINE\LINEBot\HTTPClient\CurlHTTPClient;
 
 class RecordService
 {
+    protected $recordRepo;
     protected $httpClient;
     protected $lineBot;
     protected $replyToken;
 
-    public function __construct()
+    public function __construct(RecordRepo $recordRepo)
     {
+        // 注入
+        $this->recordRepo = $recordRepo;
+        // line
         $this->httpClient = new CurlHTTPClient(config('line.token'));
         $this->lineBot = new LINEBot($this->httpClient, ['channelSecret' => config('line.secret')]);
     }
@@ -43,22 +48,25 @@ class RecordService
 
         switch ($flat['type']) {
             case 'postback':
-                $this->create($flat);
+                $flat['status'] = 'pending';
+
+                $record = $this->recordRepo->getRecords([
+                    'user'   => $flat['source.userId'],
+                    'status' => $flat['status']
+                ], false)->first();
+
+                if ($record) $this->recordRepo->edit($flat);
+                else $this->recordRepo->create($flat);
+
                 break;
+
             case 'message':
-                $this->edit($flat['replyToken'], $flat['message.id'], $flat['message.text']);
+                $flat['status'] = 'completed';
+
+                $this->recordRepo->edit($flat);
+
                 break;
         }
-
-    }
-
-    public function create(array $args = [])
-    {
-
-    }
-
-    public function edit(string $replyToken, string $msgId, string $text)
-    {
 
     }
 }

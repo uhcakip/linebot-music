@@ -6,11 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class Record extends Model
 {
-    // table name -> records
-
-    public function scopeUser($query, string $userId)
+    public function scopeUser($query, string $user)
     {
-        return $query->where('user', $userId);
+        return $query->where('user', $user);
     }
 
     public function scopeStatus($query, string $status)
