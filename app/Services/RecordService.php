@@ -37,7 +37,7 @@ class RecordService
             // 巢狀陣列可用 . 取值
             'source.userId' => 'required|string',
             'timestamp'     => 'required|digits:13',
-            'postback.data' => 'required_if:type,postback|string|in:song,singer,album',
+            'postback.data' => 'required_if:type,postback|string|in:track,artist,album',
             'message.type'  => 'required_if:type,message|string|in:text',
             'message.id'    => 'required_if:type,message|string|size:14',
             'message.text'  => 'required_if:type,message|string',

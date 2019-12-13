@@ -33,8 +33,8 @@ class RichMenuService
         ];
         // actions
         $actions = [
-            new PostbackTemplateActionBuilder('singer', 'singer', '請輸入歌手名'),
-            new PostbackTemplateActionBuilder('song', 'song', '請輸入歌曲名'),
+            new PostbackTemplateActionBuilder('artist', 'artist', '請輸入歌手名'),
+            new PostbackTemplateActionBuilder('track', 'track', '請輸入歌曲名'),
             new PostbackTemplateActionBuilder('album', 'album', '請輸入專輯名'),
         ];
         // areas
