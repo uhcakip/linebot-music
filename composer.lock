@@ -994,16 +994,16 @@
         },
         {
             "name": "linecorp/line-bot-sdk",
-            "version": "3.13.0",
+            "version": "3.15.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/line/line-bot-sdk-php.git",
-                "reference": "d6a951a1ea5294c98b11586feb940ea0e2c4f5ab"
+                "reference": "c0d9e32a910378598b59e358d757a9f801da1e98"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/line/line-bot-sdk-php/zipball/d6a951a1ea5294c98b11586feb940ea0e2c4f5ab",
-                "reference": "d6a951a1ea5294c98b11586feb940ea0e2c4f5ab",
+                "url": "https://api.github.com/repos/line/line-bot-sdk-php/zipball/c0d9e32a910378598b59e358d757a9f801da1e98",
+                "reference": "c0d9e32a910378598b59e358d757a9f801da1e98",
                 "shasum": ""
             },
             "require": {
@@ -1064,7 +1064,7 @@
                 "line",
                 "sdk"
             ],
-            "time": "2019-07-25T01:20:05+00:00"
+            "time": "2019-11-01T09:49:14+00:00"
         },
         {
             "name": "monolog/monolog",
