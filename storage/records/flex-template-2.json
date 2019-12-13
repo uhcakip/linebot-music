@@ -53,30 +53,11 @@
                                 "layout": "vertical",
                                 "contents": [
                                     {
-                                        "type": "filler"
-                                    },
-                                    {
-                                        "type": "box",
-                                        "layout": "baseline",
-                                        "contents": [
-                                            {
-                                                "type": "filler"
-                                            },
-                                            {
-                                                "type": "text",
-                                                "text": "試聽",
-                                                "color": "#ffffff",
-                                                "flex": 0,
-                                                "offsetTop": "-2px"
-                                            },
-                                            {
-                                                "type": "filler"
-                                            }
-                                        ],
-                                        "spacing": "sm"
-                                    },
-                                    {
-                                        "type": "filler"
+                                        "type": "text",
+                                        "text": "試聽",
+                                        "color": "#ffffff",
+                                        "align": "center",
+                                        "offsetTop": "7.5px"
                                     }
                                 ],
                                 "borderWidth": "1px",
@@ -85,16 +66,16 @@
                                 "borderColor": "#ffffff",
                                 "margin": "xxl",
                                 "height": "40px",
-                                "offsetTop": "2px"
+                                "offsetTop": "4px"
                             }
                         ],
                         "position": "absolute",
-                        "offsetBottom": "0px",
                         "offsetStart": "0px",
                         "offsetEnd": "0px",
                         "backgroundColor": "#111111cc",
                         "paddingAll": "20px",
-                        "paddingTop": "0px"
+                        "paddingTop": "0px",
+                        "offsetBottom": "0px"
                     }
                 ],
                 "paddingAll": "0px"

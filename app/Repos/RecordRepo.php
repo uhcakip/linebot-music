@@ -34,12 +34,14 @@ class RecordRepo
         return $record->save();
     }
 
-    public function edit(array $args)
+    public function update(Record $record, array $args)
     {
+        /*
         $record = $this->getRecords([
             'user'   => $args['source.userId'],
             'status' => $args['status']
         ], false)->first();
+        */
 
         if (($type    = Arr::get($args, 'postback.data', false)) !== false) $record->type = $type;
         if (($keyword = Arr::get($args, 'message.text',  false)) !== false) $record->keyword = $keyword;

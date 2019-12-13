@@ -7,23 +7,18 @@ use Exception;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
-use LINE\LINEBot;
-use LINE\LINEBot\HTTPClient\CurlHTTPClient;
+use LINE\LINEBot\MessageBuilder\TextMessageBuilder;
 
 class RecordService
 {
+    protected $lineService;
     protected $recordRepo;
-    protected $httpClient;
-    protected $lineBot;
-    protected $replyToken;
 
-    public function __construct(RecordRepo $recordRepo)
+    public function __construct(RecordRepo $recordRepo, LineService $lineService)
     {
         // 注入
         $this->recordRepo = $recordRepo;
-        // line
-        $this->httpClient = new CurlHTTPClient(config('line.token'));
-        $this->lineBot = new LINEBot($this->httpClient, ['channelSecret' => config('line.secret')]);
+        $this->lineService = $lineService;
     }
 
     public function handle(array $events)
@@ -45,28 +40,25 @@ class RecordService
         if ($validator->fails()) throw new Exception($validator->errors()->first());
 
         $flat = Arr::dot($events);
+        $record = $this->recordRepo->getRecords(['user' => $flat['source.userId'], 'status' => 'pending',], false)->first();
 
         switch ($flat['type']) {
             case 'postback':
-                $flat['status'] = 'pending';
-
-                $record = $this->recordRepo->getRecords([
-                    'user'   => $flat['source.userId'],
-                    'status' => $flat['status']
-                ], false)->first();
-
-                if ($record) $this->recordRepo->edit($flat);
-                else $this->recordRepo->create($flat);
-
+                if (!$record) {
+                    $this->recordRepo->create($flat);
+                    exit;
+                }
+                // 變更搜尋範圍
+                if ($record->type !== $flat['postback.data']) {
+                    $this->recordRepo->update($record, $flat);
+                }
                 break;
-
             case 'message':
-                $flat['status'] = 'completed';
-
-                $this->recordRepo->edit($flat);
-
+                if (!$record) {
+                    $this->lineService->replyMessage($flat['replyToken'], $this->lineService->createTextMsg('請先點選搜尋範圍ㄛ'));
+                }
+                $this->lineService->replyMessage($flat['replyToken'], $this->lineService->createFlexMsg());
                 break;
         }
-
     }
 }
