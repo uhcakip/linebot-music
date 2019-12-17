@@ -11,14 +11,14 @@ use LINE\LINEBot\MessageBuilder\TextMessageBuilder;
 
 class RecordService
 {
-    protected $lineService;
+    protected $messageService;
     protected $recordRepo;
 
-    public function __construct(RecordRepo $recordRepo, LineService $lineService)
+    public function __construct(RecordRepo $recordRepo, MessageService $messageService)
     {
         // 注入
         $this->recordRepo = $recordRepo;
-        $this->lineService = $lineService;
+        $this->messageService = $messageService;
     }
 
     public function handle(array $events)
@@ -55,9 +55,10 @@ class RecordService
                 break;
             case 'message':
                 if (!$record) {
-                    $this->lineService->replyMessage($flat['replyToken'], $this->lineService->createTextMsg('請先點選搜尋範圍ㄛ'));
+                    $this->messageService->replyMessage($flat['replyToken'], $this->messageService->createTextMsg('請先點選搜尋範圍ㄛ'));
                 }
-                $this->lineService->replyMessage($flat['replyToken'], $this->lineService->createFlexMsg());
+                $flexMsg = $this->messageService->createFlexMsg($record->type, getMusicInfo($record->type, $flat));
+                $this->messageService->replyMessage($flat['replyToken'], $flexMsg);
                 break;
         }
     }
