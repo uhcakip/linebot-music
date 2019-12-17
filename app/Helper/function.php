@@ -30,6 +30,7 @@ if (!function_exists('getMusicInfo')) {
         $attributes = $type . 's';
         $result = json_decode($response->getBody())->$attributes->data;
         // Log::info(print_r($result, true));
+
         return $result;
     }
 }

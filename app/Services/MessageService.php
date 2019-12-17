@@ -6,14 +6,8 @@ use Illuminate\Support\Facades\Log;
 use LINE\LINEBot;
 use LINE\LINEBot\HTTPClient\CurlHTTPClient;
 use LINE\LINEBot\MessageBuilder;
-use LINE\LINEBot\MessageBuilder\Flex\ComponentBuilder\BoxComponentBuilder;
-use LINE\LINEBot\MessageBuilder\Flex\ComponentBuilder\ImageComponentBuilder;
-use LINE\LINEBot\MessageBuilder\Flex\ComponentBuilder\TextComponentBuilder;
-use LINE\LINEBot\MessageBuilder\Flex\ContainerBuilder\BubbleContainerBuilder;
-use LINE\LINEBot\MessageBuilder\Flex\ContainerBuilder\CarouselContainerBuilder;
 use LINE\LINEBot\MessageBuilder\FlexMessageBuilder;
 use LINE\LINEBot\MessageBuilder\TextMessageBuilder;
-use LINE\LINEBot\TemplateActionBuilder\PostbackTemplateActionBuilder;
 
 class MessageService
 {
@@ -41,78 +35,42 @@ class MessageService
         $bubbles = [];
         $btn = $this->componentService->createBtnComponent($type);
 
-        switch ($type) {
-            case 'track':
-                foreach ($musicInfo as $k => $v) {
-                    $musicInfoComponents = [];
-                    $bodyComponents = [];
+        foreach ($musicInfo as $k => $v) {
+            // 順序需為 lg -> sm -> btn
+            $musicComponents = [];
+            $bodyComponents = [];
 
-                    // 歌名
-                    $musicInfoComponents[] = $this->componentService->createLgTextComponent($v->name);
-                    // 歌手名
-                    $musicInfoComponents[] = $this->componentService->createSmTextComponent($v->album->artist->name);
-                    // 試聽按鈕
-                    $musicInfoComponents[] = $btn;
+            // 依據 type 顯示歌名 or 歌手名 or 專輯名
+            $musicComponents[] = $this->componentService->createLgTextComponent($v->name);
 
-                    // 專輯圖片
-                    $bodyComponents[] = $this->componentService->createMusicImgComponent($v->album->images[1]->url);
-                    // 歌名 + 歌手 + 按鈕
-                    $bodyComponents[] = $this->componentService->createMusicInfoComponent($musicInfoComponents);
+            if ($type === 'track') {
+                // 歌手名
+                $musicComponents[] = $this->componentService->createSmTextComponent($v->album->artist->name);
+            }
+            if ($type === 'album') {
+                // 歌手名
+                $musicComponents[] = $this->componentService->createSmTextComponent($v->artist->name);
+            }
 
-                    // body
-                    $body = $this->componentService->createBodyComponent($bodyComponents);
-                    // bubble
-                    $bubbles[] = $this->componentService->createBubbleContainer($body);
+            // 歌手圖片 or 專輯圖片
+            $bodyComponents[] = $type === 'track'
+                              ? $this->componentService->createMusicImgComponent($v->album->images[1]->url)
+                              : $this->componentService->createMusicImgComponent($v->images[1]->url);
 
-                }
-                break;
-            case 'artist':
-                foreach ($musicInfo as $k => $v) {
-                    $musicInfoComponents = [];
-                    $bodyComponents = [];
+            // 按鈕
+            $musicComponents[] = $btn;
 
-                    // 歌手名
-                    $musicInfoComponents[] = $this->componentService->createLgTextComponent($v->name);
-                    // 顯示相關歌曲按鈕
-                    $musicInfoComponents[] = $btn;
+            // 音樂資訊 + 按鈕
+            $bodyComponents[] = $this->componentService->createMusicInfoComponent($musicComponents);
 
-                    // 歌手圖片
-                    $bodyComponents[] = $this->componentService->createMusicImgComponent($v->images[1]->url);
-                    // 歌手 + 按鈕
-                    $bodyComponents[] = $this->componentService->createMusicInfoComponent($musicInfoComponents);
+            // body
+            $body = $this->componentService->createBodyComponent($bodyComponents);
 
-                    // body
-                    $body = $this->componentService->createBodyComponent($bodyComponents);
-                    // bubble
-                    $bubbles[] = $this->componentService->createBubbleContainer($body);
-                }
-                break;
-            case 'album':
-                foreach ($musicInfo as $k => $v) {
-                    $musicInfoComponents = [];
-                    $bodyComponents = [];
-
-                    // 專輯名
-                    $musicInfoComponents[] = $this->componentService->createLgTextComponent($v->name);
-                    // 歌手名
-                    $musicInfoComponents[] = $this->componentService->createSmTextComponent($v->artist->name);
-                    // 顯示相關歌曲按鈕
-                    $musicInfoComponents[] = $btn;
-
-                    // 專輯圖片
-                    $bodyComponents[] = $this->componentService->createMusicImgComponent($v->images[1]->url);
-                    // 專輯 + 歌手 + 按鈕
-                    $bodyComponents[] = $this->componentService->createMusicInfoComponent($musicInfoComponents);
-
-                    // body
-                    $body = $this->componentService->createBodyComponent($bodyComponents);
-                    // bubble
-                    $bubbles[] = $this->componentService->createBubbleContainer($body);
-                }
+            // bubble
+            $bubbles[] = $this->componentService->createBubbleContainer($body);
         }
 
         $carousel = $this->componentService->createCarouselContainer($bubbles);
-
         // Log::info(print_r($carousel, true));
 
         return new FlexMessageBuilder('查詢結果', $carousel);
