@@ -33,7 +33,6 @@ class MessageService
     public function createFlexMsg(string $type, array $musicInfo)
     {
         $bubbles = [];
-        $btn = $this->componentService->createBtnComponent($type);
 
         foreach ($musicInfo as $k => $v) {
             // 順序需為 lg -> sm -> btn
@@ -58,8 +57,44 @@ class MessageService
                               : $this->componentService->createMusicImgComponent($v->images[1]->url);
 
             // 按鈕
-            $musicComponents[] = $btn;
+            $btnData = $type === 'album' ? $v->id . '|' . $v->artist->name . '|' . $v->images[1]->url : $v->id;
+            $musicComponents[] = $this->componentService->createBtnComponent($type, $btnData);
 
+            // 音樂資訊 + 按鈕
+            $bodyComponents[] = $this->componentService->createMusicInfoComponent($musicComponents);
+
+            // body
+            $body = $this->componentService->createBodyComponent($bodyComponents);
+
+            // bubble
+            $bubbles[] = $this->componentService->createBubbleContainer($body);
+        }
+
+        $carousel = $this->componentService->createCarouselContainer($bubbles);
+        // Log::info(print_r($carousel, true));
+
+        return new FlexMessageBuilder('查詢結果', $carousel);
+    }
+
+    public function createTrackFlexMsg(string $otherInfo, array $musicInfo)
+    {
+        $bubbles = [];
+        $otherInfoArr = explode('|', $otherInfo);
+
+        foreach ($musicInfo as $k => $v) {
+            // 順序需為 lg -> sm -> btn
+            $musicComponents = [];
+            $bodyComponents = [];
+
+            // 歌名
+            $musicComponents[] = $this->componentService->createLgTextComponent($v->name);
+            // 歌手名
+            $musicComponents[] = $this->componentService->createSmTextComponent($otherInfoArr[2]);
+            // 按鈕
+            $musicComponents[] = $this->componentService->createBtnComponent('track', $v->url);
+
+            // 專輯圖片
+            $bodyComponents[] = $this->componentService->createMusicImgComponent($otherInfoArr[3]);
             // 音樂資訊 + 按鈕
             $bodyComponents[] = $this->componentService->createMusicInfoComponent($musicComponents);
 

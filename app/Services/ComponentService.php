@@ -53,25 +53,32 @@ class ComponentService
      * 建立按鈕元件
      *
      * @param string $type
+     * @param string $info
      * @return BoxComponentBuilder
      */
-    public function createBtnComponent(string $type)
+    public function createBtnComponent(string $type, string $info)
     {
-        # TODO: postback action
-        $text = '試聽';
-        $data = 'preview';
+        // track
+        $hint = '試聽';
+        $data = 'preview|' . $info;
 
-        if ($type === 'artist' || $type === 'album') {
-            $text = '顯示相關歌曲';
-            $data = 'track';
+        if ($type === 'artist') {
+            $hint = '顯示歌手專輯';
+            $data = 'artist|' . $info;
+        }
+        if ($type === 'album') {
+            $hint = '顯示專輯歌曲';
+            $data = 'album|' . $info;
         }
 
-        $text = new TextComponentBuilder($text);
+        $postbackAction = new PostbackTemplateActionBuilder('btn', $data);
+
+        $text = new TextComponentBuilder($hint);
         $text->setColor(config('line.main_color'))
              ->setAlign('center')
              ->setOffsetTop('7.5px');
 
-        $box = new BoxComponentBuilder('vertical', [$text], null, 'sm', 'xxl');
+        $box = new BoxComponentBuilder('vertical', [$text], null, 'sm', 'xxl', $postbackAction);
         $box->setHeight('40px')
             ->setBorderWidth('1px')
             ->setBorderColor(config('line.main_color'))
