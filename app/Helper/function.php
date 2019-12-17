@@ -2,8 +2,6 @@
 
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Log;
-use KKBOX\KKBOXOpenAPI\OpenAPI;
-use KKBOX\KKBOXOpenAPI\Territory;
 
 if (!function_exists('addDefaultKeys')) {
     function addDefaultKeys(array $args)
@@ -19,18 +17,20 @@ if (!function_exists('addDefaultKeys')) {
     }
 }
 
-if (!function_exists('getMusicInfo')) {
-    function getMusicInfo(string $type, array $args)
+/*
+if (!function_exists('filterAlbumInfo')) {
+    function filterAlbumInfo(array $args)
     {
-        // initialize
-        $kkbox = new OpenAPI(config('kkbox.id'), config('kkbox.secret'));
-        $kkbox->fetchAndUpdateAccessToken();
+        $last = [];
+        $albumName = '';
 
-        $response = $kkbox->search($args['message.text'], [$type], Territory::Taiwan, 0, 5);
-        $attributes = $type . 's';
-        $result = json_decode($response->getBody())->$attributes->data;
-        // Log::info(print_r($result, true));
+        foreach ($args as $k => $v) {
+            if (count($last) === 5) break;
+            if ($albumName !== $v->name) $last[$k] = $v;
+            $albumName = $v->name;
+        }
 
-        return $result;
+        return $last;
     }
 }
+*/
