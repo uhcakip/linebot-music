@@ -17,7 +17,14 @@ class MusicService
         $this->kkbox->fetchAndUpdateAccessToken();
     }
 
-    public function getMusicByKeyword(string $type, array $args)
+    /**
+     * 用關鍵字搜尋 ( 限定搜尋範圍 )
+     *
+     * @param string $type
+     * @param array $args
+     * @return mixed
+     */
+    public function getResult(string $type, array $args)
     {
         $response = $this->kkbox->search($args['message.text'], [$type], Territory::Taiwan, 0, 5);
         $attributes = $type . 's';
@@ -27,26 +34,33 @@ class MusicService
         return $result;
     }
 
-    // 顯示歌手專輯
-    public function getAlbumByArtistId(string $id)
+    /**
+     * 用 artist id 搜尋歌手專輯
+     *
+     * @param string $artistId
+     * @return mixed
+     */
+    public function getAlbums(string $artistId)
     {
-        $response = $this->kkbox->fetchAlbumsOfArtist($id);
+        $response = $this->kkbox->fetchAlbumsOfArtist($artistId);
         $result = json_decode($response->getBody())->data;
-        // 取最新前五張專輯 ( 專輯名不重複 )
-        $last = Arr::sort(array_slice($result, -5));
-        // Log::info(print_r($last, true));
 
-        return $last;
+        // 隨機取 5 張專輯
+        return Arr::random($result, 5);
     }
 
-    // 顯示專輯歌曲
-    public function getTrackByAlbumId(string $id)
+    /**
+     * 用 album id 搜尋專輯歌曲
+     *
+     * @param string $albumId
+     * @return array
+     */
+    public function getTracks(string $albumId)
     {
-        $response = $this->kkbox->fetchTracksInAlbum($id);
+        $response = $this->kkbox->fetchTracksInAlbum($albumId);
         $result = json_decode($response->getBody())->data;
-        // Log::info(print_r($result, true));
 
-        // 取專輯前五首歌
-        return array_slice($result, 0, 5);
+        // 隨機取 5 首歌
+        return Arr::random($result, 5);
     }
 }

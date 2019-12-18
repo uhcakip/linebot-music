@@ -8,13 +8,12 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
-use LINE\LINEBot\MessageBuilder\TextMessageBuilder;
 
 class RecordService
 {
+    protected $recordRepo;
     protected $messageService;
     protected $musicService;
-    protected $recordRepo;
 
     public function __construct(RecordRepo $recordRepo, MessageService $messageService, MusicService $musicService)
     {
@@ -36,7 +35,7 @@ class RecordService
             'source.userId' => 'required|string',
             'timestamp'     => 'required|digits:13',
             // regex -> 因 pipe 衝突，需寫成 array 形式
-            'postback.data' => ['required_if:type,postback', 'string', 'regex:/^track$|^artist$|^album$|^preview$|^artist\|.+|^album\|.+/'],
+            'postback.data' => ['required_if:type,postback', 'string', 'regex:/^track$|^artist$|^album$|^preview\|.+|^find_album\|.+|^find_track\|.+/'],
             'message.type'  => 'required_if:type,message|string|in:text',
             'message.id'    => 'required_if:type,message|string|size:14',
             'message.text'  => 'required_if:type,message|string',
@@ -45,7 +44,7 @@ class RecordService
 
         $flat = Arr::dot($events);
         $replyToken = $flat['replyToken'];
-        $record = $this->recordRepo->getRecords(['user' => $flat['source.userId'], 'status' => 'pending'], false)->first();
+        $record = $this->recordRepo->getRecords(['user' => $flat['source.userId']], false)->first();
 
         switch ($flat['type']) {
             case 'postback':
@@ -54,27 +53,29 @@ class RecordService
                     exit;
                 }
 
-                $data = $flat['postback.data'];
+                $info = $flat['postback.data'];
 
                 // 變更搜尋範圍
-                if (in_array($data, ['track', 'artist', 'album']) && $record->type !== $data) {
+                if (in_array($info, ['track', 'artist', 'album']) && $record->type !== $info) {
                     $this->recordRepo->update($record, $flat);
                     exit;
                 }
 
-                if (Str::contains($data, 'artist|')) {
-                    $id = explode('|', $data)[1];
-                    $music = $this->musicService->getAlbumByArtistId($id);
-                    $flexMsg = $this->messageService->createFlexMsg('album', $music);
-                    $response = $this->messageService->replyMessage($replyToken, $flexMsg);
+                // 顯示歌手專輯
+                if (Str::contains($info, 'find_album|')) {
+                    $artistId = explode('|', $info)[1];
+                    $albums = $this->musicService->getAlbums($artistId);
+                    $flexMsg = $this->messageService->createAlbumFlex($albums);
+                    $response = $this->messageService->reply($replyToken, $flexMsg);
                     if (!$response->isSucceeded()) throw new Exception($response->getRawBody());
                 }
 
-                if (Str::contains($data, 'album|')) {
-                    $id = explode('|', $data)[1];
-                    $music = $this->musicService->getTrackByAlbumId($id);
-                    $flexMsg = $this->messageService->createTrackFlexMsg($data, $music);
-                    $response = $this->messageService->replyMessage($replyToken, $flexMsg);
+                // 顯示專輯歌曲
+                if (Str::contains($info, 'find_track|')) {
+                    $albumId = explode('|', $info)[1];
+                    $tracks = $this->musicService->getTracks($albumId);
+                    $flexMsg = $this->messageService->createTrackFlex($info, $tracks);
+                    $response = $this->messageService->reply($replyToken, $flexMsg);
                     if (!$response->isSucceeded()) throw new Exception($response->getRawBody());
                 }
 
@@ -82,13 +83,26 @@ class RecordService
 
             case 'message':
                 if (!$record) {
-                    $this->messageService->replyMessage($replyToken, $this->messageService->createTextMsg('請先點選搜尋範圍ㄛ'));
+                    $this->messageService->reply($replyToken, $this->messageService->createText('請先點選搜尋範圍ㄛ'));
                     exit;
                 }
                 // reply flex message
-                $music = $this->musicService->getMusicByKeyword($record->type, $flat);
-                $flexMsg = $this->messageService->createFlexMsg($record->type, $music);
-                $response = $this->messageService->replyMessage($replyToken, $flexMsg);
+                $msg = $this->messageService->createText('找ㄅ到相關音樂資訊得死');
+                $result = $this->musicService->getResult($record->type, $flat);
+                if (!$result) {
+                    $this->messageService->reply($replyToken, $msg);
+                    exit;
+                }
+                if ($record->type === 'track') {
+                    $msg = $this->messageService->createTrackFlex('', $result);
+                }
+                if ($record->type === 'artist') {
+                    $msg = $this->messageService->createArtistFlex($result);
+                }
+                if ($record->type === 'album') {
+                    $msg = $this->messageService->createAlbumFlex($result);
+                }
+                $response = $this->messageService->reply($replyToken, $msg);
                 if (!$response->isSucceeded()) throw new Exception($response->getRawBody());
                 break;
         }

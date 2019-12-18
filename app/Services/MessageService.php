@@ -25,96 +25,121 @@ class MessageService
         $this->lineBot = new LINEBot($this->httpClient, ['channelSecret' => config('line.secret')]);
     }
 
-    public function createTextMsg(string $text)
+    public function createText(string $text)
     {
         return new TextMessageBuilder($text);
     }
 
-    public function createFlexMsg(string $type, array $musicInfo)
+    public function createTrackFlex(string $info, array $tracks)
     {
         $bubbles = [];
+        // 顯示專輯歌曲
+        $infoArr = $info ? explode('|', $info) : [];
 
-        foreach ($musicInfo as $k => $v) {
+        foreach ($tracks as $k => $v) {
             // 順序需為 lg -> sm -> btn
-            $musicComponents = [];
-            $bodyComponents = [];
-
-            // 依據 type 顯示歌名 or 歌手名 or 專輯名
-            $musicComponents[] = $this->componentService->createLgTextComponent($v->name);
-
-            if ($type === 'track') {
-                // 歌手名
-                $musicComponents[] = $this->componentService->createSmTextComponent($v->album->artist->name);
-            }
-            if ($type === 'album') {
-                // 歌手名
-                $musicComponents[] = $this->componentService->createSmTextComponent($v->artist->name);
-            }
-
-            // 歌手圖片 or 專輯圖片
-            $bodyComponents[] = $type === 'track'
-                              ? $this->componentService->createMusicImgComponent($v->album->images[1]->url)
-                              : $this->componentService->createMusicImgComponent($v->images[1]->url);
-
-            // 按鈕
-            $btnData = $type === 'album' ? $v->id . '|' . $v->artist->name . '|' . $v->images[1]->url : $v->id;
-            $musicComponents[] = $this->componentService->createBtnComponent($type, $btnData);
-
-            // 音樂資訊 + 按鈕
-            $bodyComponents[] = $this->componentService->createMusicInfoComponent($musicComponents);
-
-            // body
-            $body = $this->componentService->createBodyComponent($bodyComponents);
-
-            // bubble
-            $bubbles[] = $this->componentService->createBubbleContainer($body);
-        }
-
-        $carousel = $this->componentService->createCarouselContainer($bubbles);
-        // Log::info(print_r($carousel, true));
-
-        return new FlexMessageBuilder('查詢結果', $carousel);
-    }
-
-    public function createTrackFlexMsg(string $otherInfo, array $musicInfo)
-    {
-        $bubbles = [];
-        $otherInfoArr = explode('|', $otherInfo);
-
-        foreach ($musicInfo as $k => $v) {
-            // 順序需為 lg -> sm -> btn
-            $musicComponents = [];
-            $bodyComponents = [];
+            $musicBoxs = [];
+            // 順序需為 img -> music
+            $bodyBoxs = [];
 
             // 歌名
-            $musicComponents[] = $this->componentService->createLgTextComponent($v->name);
+            $musicBoxs[] = $this->componentService->createLgText($v->name);
             // 歌手名
-            $musicComponents[] = $this->componentService->createSmTextComponent($otherInfoArr[2]);
+            $musicBoxs[] = $this->componentService->createSmText($infoArr ? $infoArr[2] : $v->album->artist->name);
             // 按鈕
-            $musicComponents[] = $this->componentService->createBtnComponent('track', $v->url);
+            $musicBoxs[] = $this->componentService->createBtn('試聽', 'preview|' . $v->url);
 
             // 專輯圖片
-            $bodyComponents[] = $this->componentService->createMusicImgComponent($otherInfoArr[3]);
+            $bodyBoxs[] = $this->componentService->createImg($infoArr ? $infoArr[3] : $v->album->images[1]->url);
             // 音樂資訊 + 按鈕
-            $bodyComponents[] = $this->componentService->createMusicInfoComponent($musicComponents);
+            $bodyBoxs[] = $this->componentService->createMusic($musicBoxs);
 
-            // body
-            $body = $this->componentService->createBodyComponent($bodyComponents);
+            // 組成 body
+            $body = $this->componentService->createBody($bodyBoxs);
 
-            // bubble
-            $bubbles[] = $this->componentService->createBubbleContainer($body);
+            // 組成 bubble
+            $bubbles[] = $this->componentService->createBubble($body);
         }
 
-        $carousel = $this->componentService->createCarouselContainer($bubbles);
+        $carousel = $this->componentService->createCarousel($bubbles);
         // Log::info(print_r($carousel, true));
 
         return new FlexMessageBuilder('查詢結果', $carousel);
     }
 
-    public function replyMessage(string $replyToken, MessageBuilder $msgBuilder)
+    public function createArtistFlex(array $artists)
+    {
+        $bubbles = [];
+
+        foreach ($artists as $k => $v) {
+            // 順序需為 lg -> btn
+            $musicBoxs = [];
+            // 順序需為 img -> music
+            $bodyBoxs = [];
+
+            // 歌手名
+            $musicBoxs[] = $this->componentService->createLgText($v->name);
+            // 按鈕
+            $musicBoxs[] = $this->componentService->createBtn('顯示歌手專輯', 'find_album|' . $v->id);
+
+            // 歌手圖片
+            $bodyBoxs[] = $this->componentService->createImg($v->images[1]->url);
+            // 音樂資訊 + 按鈕
+            $bodyBoxs[] = $this->componentService->createMusic($musicBoxs);
+
+            // 組成 body
+            $body = $this->componentService->createBody($bodyBoxs);
+
+            // 組成 bubble
+            $bubbles[] = $this->componentService->createBubble($body);
+        }
+
+        $carousel = $this->componentService->createCarousel($bubbles);
+        // Log::info(print_r($carousel, true));
+
+        return new FlexMessageBuilder('查詢結果', $carousel);
+    }
+
+    public function createAlbumFlex(array $albums)
+    {
+        $bubbles = [];
+
+        foreach ($albums as $k => $v) {
+            // 順序需為 lg -> sm -> btn
+            $musicBoxs = [];
+            // 順序需為 img -> music
+            $bodyBoxs = [];
+
+            // 專輯名
+            $musicBoxs[] = $this->componentService->createLgText($v->name);
+            // 歌手名
+            $musicBoxs[] = $this->componentService->createSmText($v->artist->name);
+            // 按鈕
+            $musicBoxs[] = $this->componentService->createBtn(
+                '顯示專輯歌曲',
+                'find_track|' . $v->id . '|' . $v->artist->name . '|' . $v->images[1]->url
+            );
+
+            // 專輯圖片
+            $bodyBoxs[] = $this->componentService->createImg($v->images[1]->url);
+            // 音樂資訊 + 按鈕
+            $bodyBoxs[] = $this->componentService->createMusic($musicBoxs);
+
+            // 組成 body
+            $body = $this->componentService->createBody($bodyBoxs);
+
+            // 組成 bubble
+            $bubbles[] = $this->componentService->createBubble($body);
+        }
+
+        $carousel = $this->componentService->createCarousel($bubbles);
+        // Log::info(print_r($carousel, true));
+
+        return new FlexMessageBuilder('查詢結果', $carousel);
+    }
+
+    public function reply(string $replyToken, MessageBuilder $msgBuilder)
     {
         return $this->lineBot->replyMessage($replyToken, $msgBuilder);
     }
-
-
 }

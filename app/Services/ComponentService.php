@@ -18,12 +18,12 @@ class ComponentService
      * @param string $name
      * @return BoxComponentBuilder
      */
-    public function createLgTextComponent(string $name)
+    public function createLgText(string $name)
     {
         $text = new TextComponentBuilder($name);
         $text->setSize('lg')
-             ->setColor(config('line.main_color'))
-             ->setWeight('bold');
+            ->setColor(config('line.main_color'))
+            ->setWeight('bold');
 
         $box = new BoxComponentBuilder('vertical', [$text]);
         $box->setOffsetTop('8px');
@@ -37,11 +37,11 @@ class ComponentService
      * @param string $name
      * @return BoxComponentBuilder
      */
-    public function createSmTextComponent(string $name)
+    public function createSmText(string $name)
     {
         $text = new TextComponentBuilder($name);
         $text->setSize('sm')
-             ->setColor('#ebebeb');
+            ->setColor('#ebebeb');
 
         $box = new BoxComponentBuilder('baseline', [$text], null, 'lg');
         $box->setOffsetTop('15px');
@@ -52,31 +52,18 @@ class ComponentService
     /**
      * 建立按鈕元件
      *
-     * @param string $type
-     * @param string $info
+     * @param string $hint
+     * @param string $data
      * @return BoxComponentBuilder
      */
-    public function createBtnComponent(string $type, string $info)
+    public function createBtn(string $hint, string $data)
     {
-        // track
-        $hint = '試聽';
-        $data = 'preview|' . $info;
-
-        if ($type === 'artist') {
-            $hint = '顯示歌手專輯';
-            $data = 'artist|' . $info;
-        }
-        if ($type === 'album') {
-            $hint = '顯示專輯歌曲';
-            $data = 'album|' . $info;
-        }
-
         $postbackAction = new PostbackTemplateActionBuilder('btn', $data);
 
         $text = new TextComponentBuilder($hint);
         $text->setColor(config('line.main_color'))
-             ->setAlign('center')
-             ->setOffsetTop('7.5px');
+            ->setAlign('center')
+            ->setOffsetTop('7.5px');
 
         $box = new BoxComponentBuilder('vertical', [$text], null, 'sm', 'xxl', $postbackAction);
         $box->setHeight('40px')
@@ -94,7 +81,7 @@ class ComponentService
      * @param ComponentBuilder[] $components
      * @return BoxComponentBuilder
      */
-    public function createMusicInfoComponent($components)
+    public function createMusic(array $components)
     {
         $box = new BoxComponentBuilder('vertical', $components);
         $box->setPosition('absolute')
@@ -114,7 +101,7 @@ class ComponentService
      * @param string $url
      * @return ImageComponentBuilder
      */
-    public function createMusicImgComponent(string $url)
+    public function createImg(string $url)
     {
         return new ImageComponentBuilder($url, null, null, null, 'top', 'full', '2:3', 'cover');
     }
@@ -125,7 +112,7 @@ class ComponentService
      * @param ComponentBuilder[] $components
      * @return BoxComponentBuilder
      */
-    public function createBodyComponent($components)
+    public function createBody(array $components)
     {
         $box = new BoxComponentBuilder('vertical', $components);
         $box->setPaddingAll('0px');
@@ -134,23 +121,23 @@ class ComponentService
     }
 
     /**
-     * 組成 bubble ( body )
+     * 組成 bubble ( container )
      *
      * @param BoxComponentBuilder $body
      * @return BubbleContainerBuilder
      */
-    public function createBubbleContainer(BoxComponentBuilder $body)
+    public function createBubble(BoxComponentBuilder $body)
     {
         return new BubbleContainerBuilder(null, null, null, $body);
     }
 
     /**
-     * 組成 carousel ( bubble )
+     * 組成 carousel ( container )
      *
      * @param BubbleContainerBuilder[] $bubbles
      * @return CarouselContainerBuilder
      */
-    public function createCarouselContainer($bubbles)
+    public function createCarousel(array $bubbles)
     {
         return new CarouselContainerBuilder($bubbles);
     }
