@@ -90,11 +90,6 @@ class RecordService
                 $flexMsg = $this->messageService->createFlexMsg($record->type, $music);
                 $response = $this->messageService->replyMessage($replyToken, $flexMsg);
                 if (!$response->isSucceeded()) throw new Exception($response->getRawBody());
-                // save to db
-                /*
-                $flat['status'] = 'completed';
-                $this->recordRepo->update($record, $flat);
-                */
                 break;
         }
     }
