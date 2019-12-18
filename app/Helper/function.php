@@ -1,5 +1,6 @@
 <?php
 
+use GuzzleHttp\Client;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Log;
 
@@ -14,6 +15,16 @@ if (!function_exists('addDefaultKeys')) {
         ];
 
         return $args + $defaults;
+    }
+}
+
+if (!function_exists('getPreview')) {
+    function getPreview(string $url)
+    {
+        $client = new Client();
+        $html = $client->get($url)->getBody()->getContents();
+        preg_match('/<meta property="music:preview_url:url" content="(.+)"/', $html, $matches);
+        $preview = file_put_contents(public_path('music/test.mp3'), file_get_contents($matches[1]));
     }
 }
 
