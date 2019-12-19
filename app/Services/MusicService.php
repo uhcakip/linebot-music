@@ -42,16 +42,15 @@ class MusicService
      */
     public function getAlbums(string $artistId)
     {
-        $response = $this->kkbox->fetchAlbumsOfArtist($artistId, 'TW');
+        $response = $this->kkbox->fetchAlbumsOfArtist($artistId);
         $result = json_decode($response->getBody())->data;
-        // 地區包含 TW
+        // 地區必須包含 TW 才有權限取得音樂資訊
         $filtered = Arr::where($result, function ($v) {
-            $availableArr = $v->available_territories;
-            return in_array('TW', $availableArr);
+            return in_array('TW', $v->available_territories);
         });
 
         // 隨機取 5 張專輯
-        return Arr::random($filtered, 5);
+        return Arr::random($filtered, count($filtered) < 5 ? count($filtered) : 5);
     }
 
     /**
@@ -66,6 +65,6 @@ class MusicService
         $result = json_decode($response->getBody())->data;
 
         // 隨機取 5 首歌
-        return Arr::random($result, count($result) >= 5 ? 5 : count($result));
+        return Arr::random($result, count($result) < 5 ? count($result) : 5);
     }
 }

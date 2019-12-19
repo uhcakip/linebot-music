@@ -5,6 +5,12 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Log;
 
 if (!function_exists('addDefaultKeys')) {
+    /**
+     * 加入預設欄位 ( repo )
+     *
+     * @param array $args
+     * @return array
+     */
     function addDefaultKeys(array $args)
     {
         $defaults = [
@@ -19,6 +25,12 @@ if (!function_exists('addDefaultKeys')) {
 }
 
 if (!function_exists('getPreviewUrl')) {
+    /**
+     * 取得音樂試聽連結
+     *
+     * @param string $pageUrl
+     * @return mixed
+     */
     function getPreviewUrl(string $pageUrl)
     {
         $client = new Client();

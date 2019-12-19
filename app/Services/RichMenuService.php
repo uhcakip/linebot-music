@@ -21,6 +21,9 @@ class RichMenuService
         $this->lineBot = new LINEBot($this->httpClient, ['channelSecret' => config('line.secret')]);
     }
 
+    /**
+     * 建立 Rich Menu
+     */
     public function create()
     {
         // size
@@ -56,6 +59,9 @@ class RichMenuService
         $this->lineBot->linkRichMenu(config('line.user'), $richMenuId);
     }
 
+    /**
+     * 刪除 Rich Menu
+     */
     public function delete()
     {
         $this->lineBot->unlinkRichMenu(config('line.user'));
