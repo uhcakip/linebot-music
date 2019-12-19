@@ -14,7 +14,3 @@
 Route::get('/', function () {
     return view('welcome');
 });
-
-Route::get('/test', function () {
-    getPreview('https://www.kkbox.com/tw/tc/song/N8mxcNm05WNM8MCJoMCJo0P4-index.html');
-});

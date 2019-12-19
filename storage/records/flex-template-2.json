@@ -31,7 +31,7 @@
                                         "weight": "bold"
                                     }
                                 ],
-                                "offsetTop": "10px"
+                                "offsetTop": "8px"
                             },
                             {
                                 "type": "box",
@@ -46,27 +46,70 @@
                                     }
                                 ],
                                 "spacing": "lg",
-                                "offsetTop": "15px"
+                                "offsetTop": "10px"
                             },
                             {
                                 "type": "box",
-                                "layout": "vertical",
+                                "layout": "horizontal",
                                 "contents": [
                                     {
-                                        "type": "text",
-                                        "text": "試聽",
-                                        "color": "#ffffff",
-                                        "align": "center",
-                                        "offsetTop": "7.5px"
+                                        "type": "box",
+                                        "layout": "vertical",
+                                        "contents": [
+                                            {
+                                                "type": "text",
+                                                "text": "試聽",
+                                                "color": "#ffffff",
+                                                "position": "absolute",
+                                                "offsetTop": "7.5px",
+                                                "align": "center",
+                                                "offsetStart": "25%",
+                                                "offsetEnd": "25%"
+                                            }
+                                        ],
+                                        "spacing": "sm",
+                                        "margin": "lg",
+                                        "borderWidth": "1px",
+                                        "height": "40px",
+                                        "borderColor": "#ffffff",
+                                        "cornerRadius": "4px",
+                                        "flex": 1
+                                    },
+                                    {
+                                        "type": "box",
+                                        "layout": "vertical",
+                                        "contents": [
+                                            {
+                                                "type": "text",
+                                                "text": "前往下載",
+                                                "color": "#ffffff",
+                                                "align": "center",
+                                                "offsetTop": "7.5px",
+                                                "position": "absolute",
+                                                "offsetStart": "25%",
+                                                "offsetEnd": "25%"
+                                            }
+                                        ],
+                                        "spacing": "md",
+                                        "margin": "xxl",
+                                        "borderWidth": "1px",
+                                        "height": "40px",
+                                        "borderColor": "#ffffff",
+                                        "cornerRadius": "4px",
+                                        "flex": 2,
+                                        "action": {
+                                            "type": "uri",
+                                            "label": "action",
+                                            "uri": "http://linecorp.com/"
+                                        }
                                     }
                                 ],
-                                "borderWidth": "1px",
                                 "cornerRadius": "4px",
                                 "spacing": "sm",
                                 "borderColor": "#ffffff",
                                 "margin": "xxl",
                                 "height": "40px",
-                                "offsetTop": "4px"
+                                "offsetTop": "2px"
                             }
                         ],
                         "position": "absolute",
@@ -74,7 +117,7 @@
                         "offsetEnd": "0px",
                         "backgroundColor": "#111111cc",
                         "paddingAll": "20px",
-                        "paddingTop": "0px",
+                        "paddingTop": "8px",
                         "offsetBottom": "0px"
                     }
                 ],

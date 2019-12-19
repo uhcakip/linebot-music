@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Log;
 use LINE\LINEBot;
 use LINE\LINEBot\HTTPClient\CurlHTTPClient;
 use LINE\LINEBot\MessageBuilder;
+use LINE\LINEBot\MessageBuilder\AudioMessageBuilder;
 use LINE\LINEBot\MessageBuilder\FlexMessageBuilder;
 use LINE\LINEBot\MessageBuilder\TextMessageBuilder;
 
@@ -30,11 +31,11 @@ class MessageService
         return new TextMessageBuilder($text);
     }
 
-    public function createTrackFlex(string $info, array $tracks)
+    public function createTrackFlex(array $data, array $tracks)
     {
+        // data -> 顯示專輯歌曲
+
         $bubbles = [];
-        // 顯示專輯歌曲
-        $infoArr = $info ? explode('|', $info) : [];
 
         foreach ($tracks as $k => $v) {
             // 順序需為 lg -> sm -> btn
@@ -45,12 +46,12 @@ class MessageService
             // 歌名
             $musicBoxs[] = $this->componentService->createLgText($v->name);
             // 歌手名
-            $musicBoxs[] = $this->componentService->createSmText($infoArr ? $infoArr[2] : $v->album->artist->name);
+            $musicBoxs[] = $this->componentService->createSmText($data ? $data[2] : $v->album->artist->name);
             // 按鈕
-            $musicBoxs[] = $this->componentService->createBtn('試聽', 'preview|' . $v->url);
+            $musicBoxs[] = $this->componentService->createTrackBtn('preview|' . $v->id . '|' . getPreviewUrl($v->url));
 
             // 專輯圖片
-            $bodyBoxs[] = $this->componentService->createImg($infoArr ? $infoArr[3] : $v->album->images[1]->url);
+            $bodyBoxs[] = $this->componentService->createImg($data ? $data[3] : $v->album->images[1]->url);
             // 音樂資訊 + 按鈕
             $bodyBoxs[] = $this->componentService->createMusic($musicBoxs);
 
@@ -136,6 +137,11 @@ class MessageService
         // Log::info(print_r($carousel, true));
 
         return new FlexMessageBuilder('查詢結果', $carousel);
+    }
+
+    public function createAudio(string $url)
+    {
+        return new AudioMessageBuilder($url, 30 * 1000);
     }
 
     public function reply(string $replyToken, MessageBuilder $msgBuilder)

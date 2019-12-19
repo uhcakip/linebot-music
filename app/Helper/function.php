@@ -18,13 +18,31 @@ if (!function_exists('addDefaultKeys')) {
     }
 }
 
-if (!function_exists('getPreview')) {
-    function getPreview(string $url)
+if (!function_exists('getPreviewUrl')) {
+    function getPreviewUrl(string $pageUrl)
     {
         $client = new Client();
-        $html = $client->get($url)->getBody()->getContents();
+        $html = $client->get($pageUrl)->getBody()->getContents();
         preg_match('/<meta property="music:preview_url:url" content="(.+)"/', $html, $matches);
-        $preview = file_put_contents(public_path('music/test.mp3'), file_get_contents($matches[1]));
+
+        return $matches[1];
+    }
+}
+
+if (!function_exists('saveMusic')) {
+    /**
+     * 儲存、回傳試聽音檔
+     *
+     * @param string $trackId
+     * @param string $previewUrl
+     * @return string
+     */
+    function saveMusic(string $trackId, string $previewUrl)
+    {
+        $path = 'music/' . $trackId . '.mp3';
+        if (!file_exists($path)) file_put_contents(public_path($path), file_get_contents($previewUrl));
+
+        return asset($path);
     }
 }
 

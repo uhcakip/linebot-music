@@ -9,6 +9,7 @@ use LINE\LINEBot\MessageBuilder\Flex\ComponentBuilder\TextComponentBuilder;
 use LINE\LINEBot\MessageBuilder\Flex\ContainerBuilder\BubbleContainerBuilder;
 use LINE\LINEBot\MessageBuilder\Flex\ContainerBuilder\CarouselContainerBuilder;
 use LINE\LINEBot\TemplateActionBuilder\PostbackTemplateActionBuilder;
+use LINE\LINEBot\TemplateActionBuilder\UriTemplateActionBuilder;
 
 class ComponentService
 {
@@ -44,13 +45,13 @@ class ComponentService
             ->setColor('#ebebeb');
 
         $box = new BoxComponentBuilder('baseline', [$text], null, 'lg');
-        $box->setOffsetTop('15px');
+        $box->setOffsetTop('10px');
 
         return $box;
     }
 
     /**
-     * 建立按鈕元件
+     * 建立歌手、專輯按鈕元件
      *
      * @param string $hint
      * @param string $data
@@ -62,8 +63,8 @@ class ComponentService
 
         $text = new TextComponentBuilder($hint);
         $text->setColor(config('line.main_color'))
-            ->setAlign('center')
-            ->setOffsetTop('7.5px');
+             ->setAlign('center')
+             ->setOffsetTop('7.5px');
 
         $box = new BoxComponentBuilder('vertical', [$text], null, 'sm', 'xxl', $postbackAction);
         $box->setHeight('40px')
@@ -73,6 +74,48 @@ class ComponentService
             ->setOffsetTop('7px');
 
         return $box;
+    }
+
+    /**
+     * 建立歌曲按鈕元件
+     *
+     * @param string $data
+     * @return BoxComponentBuilder
+     */
+    public function createTrackBtn(string $data)
+    {
+        $boxes = [];
+
+        $hints = ['試聽', '前往下載'];
+        $actions = [
+            new PostbackTemplateActionBuilder('btn', $data),
+            new UriTemplateActionBuilder('url', preg_replace('/preview\|[^\|]+\|/', '', $data))
+        ];
+
+        for ($i = 0; $i < count($hints); $i++) {
+            $text = new TextComponentBuilder($hints[$i]);
+            $text->setColor(config('line.main_color'))
+                 ->setPosition('absolute')
+                 ->setAlign('center')
+                 ->setOffsetTop('7.5px')
+                 ->setOffsetStart('25%')
+                 ->setOffsetEnd('25%');
+
+            $box = new BoxComponentBuilder('vertical', [$text], $i + 1, 'sm', 'lg', $actions[$i]);
+            $box->setHeight('40px')
+                ->setBorderWidth('1px')
+                ->setBorderColor(config('line.main_color'))
+                ->setCornerRadius('4px');
+
+            $boxes[] = $box;
+        }
+
+        $boxWrap = new BoxComponentBuilder('horizontal', $boxes, null, 'sm', 'xxl');
+        $boxWrap->setHeight('40px')
+                ->setBorderColor(config('line.main_color'))
+                ->setCornerRadius('4px');
+
+        return $boxWrap;
     }
 
     /**
@@ -89,7 +132,7 @@ class ComponentService
             ->setOffsetBottom('0px')
             ->setOffsetStart('0px')
             ->setOffsetEnd('0px')
-            ->setPaddingAll('25px')
+            ->setPaddingAll('20px')
             ->setPaddingTop('8px');
 
         return $box;

@@ -53,29 +53,36 @@ class RecordService
                     exit;
                 }
 
-                $info = $flat['postback.data'];
+                $data = $flat['postback.data'];
 
                 // 變更搜尋範圍
-                if (in_array($info, ['track', 'artist', 'album']) && $record->type !== $info) {
+                if (in_array($data, ['track', 'artist', 'album']) && $record->type !== $data) {
                     $this->recordRepo->update($record, $flat);
                     exit;
                 }
 
+                $dataArr = explode('|', $data);
+
                 // 顯示歌手專輯
-                if (Str::contains($info, 'find_album|')) {
-                    $artistId = explode('|', $info)[1];
-                    $albums = $this->musicService->getAlbums($artistId);
+                if (Str::contains($data, 'find_album|')) {
+                    $albums = $this->musicService->getAlbums($dataArr[1]);
                     $flexMsg = $this->messageService->createAlbumFlex($albums);
                     $response = $this->messageService->reply($replyToken, $flexMsg);
                     if (!$response->isSucceeded()) throw new Exception($response->getRawBody());
                 }
 
                 // 顯示專輯歌曲
-                if (Str::contains($info, 'find_track|')) {
-                    $albumId = explode('|', $info)[1];
-                    $tracks = $this->musicService->getTracks($albumId);
-                    $flexMsg = $this->messageService->createTrackFlex($info, $tracks);
+                if (Str::contains($data, 'find_track|')) {
+                    $tracks = $this->musicService->getTracks($dataArr[1]);
+                    $flexMsg = $this->messageService->createTrackFlex($dataArr, $tracks);
                     $response = $this->messageService->reply($replyToken, $flexMsg);
+                    if (!$response->isSucceeded()) throw new Exception($response->getRawBody());
+                }
+
+                // 試聽
+                if (Str::contains($data, 'preview|')) {
+                    $musicUrl = saveMusic($dataArr[1], $dataArr[2]);
+                    $response = $this->messageService->reply($replyToken, $this->messageService->createAudio($musicUrl));
                     if (!$response->isSucceeded()) throw new Exception($response->getRawBody());
                 }
 
@@ -94,7 +101,7 @@ class RecordService
                     exit;
                 }
                 if ($record->type === 'track') {
-                    $msg = $this->messageService->createTrackFlex('', $result);
+                    $msg = $this->messageService->createTrackFlex([], $result);
                 }
                 if ($record->type === 'artist') {
                     $msg = $this->messageService->createArtistFlex($result);
