@@ -13,7 +13,7 @@
 - [OpenAPI-PHP](https://github.com/KKBOX/OpenAPI-PHP) : 用來搜尋音樂資訊 
 
 ### Demo
-<img src="https://raw.githubusercontent.com/uhcakip/linebot-music-demo/master/linebot-music-demo-1.jpg" style="max-width: 50%">
+<img src="https://raw.githubusercontent.com/uhcakip/linebot-music-demo/master/linebot-music-demo-1.jpg" width="60%">
 <br>
 <br>
-<img src="https://raw.githubusercontent.com/uhcakip/linebot-music-demo/master/linebot-music-demo-2.jpg" style="max-width: 50%">
+<img src="https://raw.githubusercontent.com/uhcakip/linebot-music-demo/master/linebot-music-demo-2.jpg" width="60%">
