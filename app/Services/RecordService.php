@@ -16,6 +16,11 @@ class RecordService
     protected $messageService;
     protected $musicService;
 
+    // var
+    protected $flat;
+    protected $replyToken;
+    protected $record;
+
     public function __construct(RecordRepo $recordRepo, MessageService $messageService, MusicService $musicService)
     {
         // 注入
@@ -41,94 +46,98 @@ class RecordService
             'message.id'    => 'required_if:type,message|string|size:14',
             'message.text'  => 'required_if:type,message|string',
         ]);
-        if ($validator->fails()) throw new Exception($validator->errors()->first());
+        if ($validator->fails()) {
+            throw new Exception($validator->errors()->first());
+        }
 
-        $flat = Arr::dot($events);
-        $replyToken = $flat['replyToken'];
-        $record = $this->recordRepo->getRecords(['user' => $flat['source.userId']], false)->first();
+        $this->flat = Arr::dot($events);
+        $this->replyToken = $this->flat['replyToken'];
+        $this->record = $this->recordRepo->getRecords(['user' => $this->flat['source.userId']], false)->first();
 
-        switch ($flat['type']) {
+        // 依照事件類別 call 對應的 function
+        $handleFunName = 'handle' . ucfirst($this->flat['type']);
+        $this->$handleFunName();
+    }
 
-            case 'postback':
-                if (!$record) {
-                    $this->recordRepo->create($flat);
-                    exit;
-                }
+    public function handlePostback()
+    {
+        if (!$this->record) {
+            $this->recordRepo->create($this->flat);
+            exit;
+        }
 
-                $data = $flat['postback.data'];
+        $data = explode('|', $this->flat['postback.data']);
 
-                // 變更搜尋範圍
-                if (in_array($data, ['track', 'artist', 'album']) && $record->type !== $data) {
-                    $this->recordRepo->update($record, $flat);
-                    exit;
-                }
+        // 點選 Rich Menu 變更搜尋範圍
+        if (in_array($data[0], ['track', 'artist', 'album']) && $this->record->type !== $data[0]) {
+            $this->recordRepo->update($this->record, $this->flat);
+            exit;
+        }
 
-                $dataArr = explode('|', $data);
-
-                // 顯示歌手專輯
-                if (Str::contains($data, 'find_album|')) {
-                    $albums = $this->musicService->getAlbums($dataArr[1]);
-                    $response = $this->messageService->reply(
-                        $replyToken,
-                        $this->messageService->createAlbumFlex($albums)
-                    );
-                }
-                // 顯示專輯歌曲
-                if (Str::contains($data, 'find_track|')) {
-                    $tracks = $this->musicService->getTracks($dataArr[1]);
-                    $response = $this->messageService->reply(
-                        $replyToken,
-                        $this->messageService->createFindTrackFlex($dataArr, $tracks)
-                    );
-                }
-                // 試聽
-                if (Str::contains($data, 'preview|')) {
-                    $musicUrl = saveMusic($dataArr[1], $dataArr[2]);
-                    $response = $this->messageService->reply(
-                        $replyToken,
-                        $this->messageService->createAudio($musicUrl)
-                    );
-                }
-
-                // handle response
-                if (!isset($response)) {
-                    throw new Exception('Undefined response !');
-                }
-                if (!$response->isSucceeded()) {
-                    throw new Exception($response->getRawBody());
-                }
-
-                break;
-
-            case 'message':
-                if (!$record) {
-                    $this->messageService->reply(
-                        $replyToken,
-                        $this->messageService->createText('請先點選搜尋範圍')
-                    );
-                    exit;
-                }
-
-                if (!$result = $this->musicService->getResult($record->type, $flat)) {
-                    $this->messageService->reply(
-                        $replyToken,
-                        $this->messageService->createText('找不到相關的音樂資訊')
-                    );
-                    exit;
-                }
-
-                // 依照指定的搜尋範圍 call 對應的 function
-                $funName = 'create' . ucfirst($record->type) . 'Flex';
+        switch ($data[0]) {
+            // 點選按鈕「顯示歌手專輯」
+            case 'find_album':
+                $albums = $this->musicService->getAlbums($data[1]);
                 $response = $this->messageService->reply(
-                    $replyToken,
-                    $this->messageService->$funName($result)
+                    $this->replyToken,
+                    $this->messageService->createAlbumFlex($albums)
                 );
-
-                if (!$response->isSucceeded()) {
-                    throw new Exception($response->getRawBody());
-                }
-
+                break;
+            // 點選按鈕「顯示專輯歌曲」
+            case 'find_track':
+                $tracks = $this->musicService->getTracks($data[1]);
+                $response = $this->messageService->reply(
+                    $this->replyToken,
+                    $this->messageService->createFindTrackFlex($data, $tracks)
+                );
+                break;
+            // 點選按鈕「試聽」
+            case 'preview':
+                $musicUrl = saveMusic($data[1], $data[2]);
+                $response = $this->messageService->reply(
+                    $this->replyToken,
+                    $this->messageService->createAudio($musicUrl)
+                );
                 break;
         }
+
+        // handle response
+        if (!isset($response)) {
+            throw new Exception('Response is undefined');
+        }
+        if (!$response->isSucceeded()) {
+            throw new Exception($response->getRawBody());
+        }
     }
+
+    public function handleMessage()
+    {
+        if (!$this->record) {
+            $this->messageService->reply(
+                $this->replyToken,
+                $this->messageService->createText('請先點選搜尋範圍')
+            );
+            exit;
+        }
+
+        if (!$result = $this->musicService->getResult($this->record->type, $this->flat['message.text'])) {
+            $this->messageService->reply(
+                $this->replyToken,
+                $this->messageService->createText('找不到相關的音樂資訊')
+            );
+            exit;
+        }
+
+        // 依照搜尋範圍 call 對應的 function
+        $funName = 'create' . ucfirst($this->record->type) . 'Flex';
+        $response = $this->messageService->reply(
+            $this->replyToken,
+            $this->messageService->$funName($result)
+        );
+
+        if (!$response->isSucceeded()) {
+            throw new Exception($response->getRawBody());
+        }
+    }
+
 }

@@ -21,12 +21,12 @@ class MusicService
      * 用關鍵字搜尋 ( 限定搜尋範圍 )
      *
      * @param string $type
-     * @param array $args
+     * @param string $keyword
      * @return mixed
      */
-    public function getResult(string $type, array $args)
+    public function getResult(string $type, string $keyword)
     {
-        $response = $this->kkbox->search($args['message.text'], [$type], Territory::Taiwan, 0, 5);
+        $response = $this->kkbox->search($keyword, [$type], Territory::Taiwan, 0, 5);
         $attributes = $type . 's';
         $result = json_decode($response->getBody())->$attributes->data;
         // Log::info(print_r($result, true));
