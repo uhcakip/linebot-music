@@ -43,7 +43,7 @@ if (!function_exists('getPreviewUrl')) {
 
 if (!function_exists('saveMusic')) {
     /**
-     * 儲存、回傳試聽音檔
+     * 儲存、回傳試聽音檔路徑
      *
      * @param string $trackId
      * @param string $previewUrl

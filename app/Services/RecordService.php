@@ -7,8 +7,6 @@ use Exception;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Str;
-use LINE\LINEBot\Response;
 
 class RecordService
 {
@@ -29,6 +27,12 @@ class RecordService
         $this->musicService = $musicService;
     }
 
+    /**
+     * 接收事件
+     *
+     * @param array $events
+     * @throws Exception
+     */
     public function handle(array $events)
     {
         // Log::info(print_r($events, true));
@@ -59,6 +63,11 @@ class RecordService
         $this->$handleFun();
     }
 
+    /**
+     * 處理 postback 事件
+     *
+     * @throws Exception
+     */
     public function handlePostback()
     {
         if (!$this->record) {
@@ -68,8 +77,13 @@ class RecordService
 
         $data = explode('|', $this->flat['postback.data']);
 
-        // 點選 Rich Menu 變更搜尋範圍
-        if (in_array($data[0], ['track', 'artist', 'album']) && $this->record->type !== $data[0]) {
+        // 重複點選相同的搜尋範圍 ( Rich Menu )
+        if ($this->record->type === $data[0]) {
+            exit;
+        }
+
+        // 變更搜尋範圍 ( Rich Menu )
+        if (in_array($data[0], ['track', 'artist', 'album'])) {
             $this->recordRepo->update($this->record, $this->flat);
             exit;
         }
@@ -102,14 +116,16 @@ class RecordService
         }
 
         // handle response
-        if (!isset($response)) {
-            throw new Exception('Response is undefined');
-        }
-        if (!$response->isSucceeded()) {
+        if (isset($response) && !$response->isSucceeded()) {
             throw new Exception($response->getRawBody());
         }
     }
 
+    /**
+     * 處理 message 事件
+     *
+     * @throws Exception
+     */
     public function handleMessage()
     {
         if (!$this->record) {
