@@ -51,7 +51,10 @@ if (!function_exists('saveMusic')) {
      */
     function saveMusic(string $trackId, string $previewUrl)
     {
-        $path = 'music/' . $trackId . '.mp3';
+        $dir = 'music';
+        $path = $dir . '/' . $trackId . '.mp3';
+
+        if (!file_exists($dir)) mkdir($dir);
         if (!file_exists($path)) file_put_contents(public_path($path), file_get_contents($previewUrl));
 
         return asset($path);

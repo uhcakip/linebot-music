@@ -55,8 +55,8 @@ class RecordService
         $this->record = $this->recordRepo->getRecords(['user' => $this->flat['source.userId']], false)->first();
 
         // 依照事件類別 call 對應的 function
-        $handleFunName = 'handle' . ucfirst($this->flat['type']);
-        $this->$handleFunName();
+        $handleFun = 'handle' . ucfirst($this->flat['type']);
+        $this->$handleFun();
     }
 
     public function handlePostback()
@@ -129,10 +129,10 @@ class RecordService
         }
 
         // 依照搜尋範圍 call 對應的 function
-        $funName = 'create' . ucfirst($this->record->type) . 'Flex';
+        $createFun = 'create' . ucfirst($this->record->type) . 'Flex';
         $response = $this->messageService->reply(
             $this->replyToken,
-            $this->messageService->$funName($result)
+            $this->messageService->$createFun($result)
         );
 
         if (!$response->isSucceeded()) {
