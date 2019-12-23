@@ -146,7 +146,7 @@ class MessageService
     }
 
     /**
-     * 建立歌手 Flex Message ( 透過關鍵字搜尋 or 點選「顯示歌手專輯」 )
+     * 建立專輯 Flex Message ( 透過關鍵字搜尋 or 點選「顯示歌手專輯」 )
      *
      * @param array $albums
      * @return FlexMessageBuilder
