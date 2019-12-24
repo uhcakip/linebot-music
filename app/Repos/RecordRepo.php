@@ -27,8 +27,8 @@ class RecordRepo
     {
         $record = new Record();
 
-        $record->user   = Arr::get($args, 'source.userId');
-        $record->type   = Arr::get($args, 'postback.data');
+        $record->user   = Arr::get($args, 'user');
+        $record->type   = Arr::get($args, 'type');
         // $record->status = Arr::get($args, 'status');
 
         return $record->save();
@@ -36,9 +36,9 @@ class RecordRepo
 
     public function update(Record $record, array $args)
     {
-        if (($type    = Arr::get($args, 'postback.data', false)) !== false) $record->type = $type;
-        // if (($keyword = Arr::get($args, 'message.text',  false)) !== false) $record->keyword = $keyword;
-        // if (($status  = Arr::get($args, 'status',        false)) !== false) $record->status = $status;
+        if (($type    = Arr::get($args, 'type',    false)) !== false) $record->type = $type;
+        // if (($keyword = Arr::get($args, 'keyword', false)) !== false) $record->keyword = $keyword;
+        // if (($status  = Arr::get($args, 'status',  false)) !== false) $record->status = $status;
 
         return $record->save();
     }

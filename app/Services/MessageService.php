@@ -3,9 +3,6 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\Log;
-use LINE\LINEBot;
-use LINE\LINEBot\HTTPClient\CurlHTTPClient;
-use LINE\LINEBot\MessageBuilder;
 use LINE\LINEBot\MessageBuilder\AudioMessageBuilder;
 use LINE\LINEBot\MessageBuilder\FlexMessageBuilder;
 use LINE\LINEBot\MessageBuilder\TextMessageBuilder;
@@ -14,16 +11,10 @@ class MessageService
 {
     protected $componentService;
 
-    protected $httpClient;
-    protected $lineBot;
-
     public function __construct(ComponentService $componentService)
     {
         // 注入
         $this->componentService = $componentService;
-
-        $this->httpClient = new CurlHTTPClient(config('line.token'));
-        $this->lineBot = new LINEBot($this->httpClient, ['channelSecret' => config('line.secret')]);
     }
 
     /**
@@ -190,17 +181,5 @@ class MessageService
     public function createAudio(string $url)
     {
         return new AudioMessageBuilder($url, 30 * 1000);
-    }
-
-    /**
-     * 回覆訊息
-     *
-     * @param string $replyToken
-     * @param MessageBuilder $msgBuilder
-     * @return LINEBot\Response
-     */
-    public function reply(string $replyToken, MessageBuilder $msgBuilder)
-    {
-        return $this->lineBot->replyMessage($replyToken, $msgBuilder);
     }
 }
