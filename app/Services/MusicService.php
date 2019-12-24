@@ -13,7 +13,7 @@ class MusicService
 
     public function __construct()
     {
-        $this->kkbox = new OpenAPI(config('kkbox.id'), config('kkbox.secret'));
+        $this->kkbox = new OpenAPI(config('bot.kkbox_id'), config('bot.kkbox_secret'));
         $this->kkbox->fetchAndUpdateAccessToken();
     }
 

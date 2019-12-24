@@ -17,8 +17,8 @@ class RichMenuService
 
     public function __construct()
     {
-        $this->httpClient = new CurlHTTPClient(config('line.token'));
-        $this->lineBot = new LINEBot($this->httpClient, ['channelSecret' => config('line.secret')]);
+        $this->httpClient = new CurlHTTPClient(config('bot.line_token'));
+        $this->lineBot = new LINEBot($this->httpClient, ['channelSecret' => config('bot.line_secret')]);
     }
 
     /**
@@ -56,7 +56,7 @@ class RichMenuService
         $this->lineBot->uploadRichMenuImage($richMenuId, 'public/rich_menu_img/line-rich-menu.png', 'image/png');
 
         // link -> 完成後就可以用 getRichMenuId() 取得 richMenuId
-        $this->lineBot->linkRichMenu(config('line.user'), $richMenuId);
+        $this->lineBot->linkRichMenu(config('bot.line_user'), $richMenuId);
     }
 
     /**
@@ -64,7 +64,7 @@ class RichMenuService
      */
     public function delete()
     {
-        $this->lineBot->unlinkRichMenu(config('line.user'));
-        $this->lineBot->deleteRichMenu(config('line.user'));
+        $this->lineBot->unlinkRichMenu(config('bot.line_user'));
+        $this->lineBot->deleteRichMenu(config('bot.line_user'));
     }
 }

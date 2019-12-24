@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Repos\RecordRepo;
 use Exception;
 use Illuminate\Support\Facades\Log;
+use LINE\LINEBot\Event\BaseEvent;
 use LINE\LINEBot\Event\MessageEvent;
 use LINE\LINEBot\Event\MessageEvent\TextMessage;
 use LINE\LINEBot\Event\PostbackEvent;
@@ -30,11 +31,11 @@ class RecordService
     /**
      * 接收 Event 物件，傳給對應的處理 function
      *
-     * @param MessageEvent $eventObj
+     * @param BaseEvent $eventObj
      * @return mixed
      * @throws Exception
      */
-    public function handle(MessageEvent $eventObj)
+    public function handle(BaseEvent $eventObj)
     {
         // Log::info(print_r($eventObj, true));
         $this->eventObj = $eventObj;
@@ -77,7 +78,7 @@ class RecordService
         }
 
         // 變更搜尋範圍 ( Rich Menu )
-        if (in_array($data[0], ['track', 'artist', 'album'])) {
+        if (in_array($data[0], array_keys(config('bot.type')))) {
             $this->recordRepo->update($this->record, ['type' => $data[0]]);
             exit;
         }

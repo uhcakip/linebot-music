@@ -23,8 +23,8 @@ class RecordController extends Controller
         // 注入
         $this->recordService = $recordService;
 
-        $this->httpClient = new CurlHTTPClient(config('line.token'));
-        $this->lineBot = new LINEBot($this->httpClient, ['channelSecret' => config('line.secret')]);
+        $this->httpClient = new CurlHTTPClient(config('bot.line_token'));
+        $this->lineBot = new LINEBot($this->httpClient, ['channelSecret' => config('bot.line_secret')]);
     }
 
     public function handle(Request $request)

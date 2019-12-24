@@ -23,8 +23,8 @@ class ComponentService
     {
         $text = new TextComponentBuilder($name);
         $text->setSize('lg')
-            ->setColor(config('line.main_color'))
-            ->setWeight('bold');
+             ->setColor(config('bot.main_color'))
+             ->setWeight('bold');
 
         $box = new BoxComponentBuilder('vertical', [$text]);
         $box->setOffsetTop('8px');
@@ -42,7 +42,7 @@ class ComponentService
     {
         $text = new TextComponentBuilder($name);
         $text->setSize('sm')
-            ->setColor('#ebebeb');
+             ->setColor('#ebebeb');
 
         $box = new BoxComponentBuilder('baseline', [$text], null, 'lg');
         $box->setOffsetTop('10px');
@@ -62,14 +62,14 @@ class ComponentService
         $postbackAction = new PostbackTemplateActionBuilder('btn', $data);
 
         $text = new TextComponentBuilder($hint);
-        $text->setColor(config('line.main_color'))
+        $text->setColor(config('bot.main_color'))
              ->setAlign('center')
              ->setOffsetTop('7.5px');
 
         $box = new BoxComponentBuilder('vertical', [$text], null, 'sm', 'xxl', $postbackAction);
         $box->setHeight('40px')
             ->setBorderWidth('1px')
-            ->setBorderColor(config('line.main_color'))
+            ->setBorderColor(config('bot.main_color'))
             ->setCornerRadius('4px')
             ->setOffsetTop('7px');
 
@@ -94,7 +94,7 @@ class ComponentService
 
         for ($i = 0; $i < count($hints); $i++) {
             $text = new TextComponentBuilder($hints[$i]);
-            $text->setColor(config('line.main_color'))
+            $text->setColor(config('bot.main_color'))
                  ->setPosition('absolute')
                  ->setAlign('center')
                  ->setOffsetTop('7.5px')
@@ -104,7 +104,7 @@ class ComponentService
             $box = new BoxComponentBuilder('vertical', [$text], $i + 1, 'sm', 'lg', $actions[$i]);
             $box->setHeight('40px')
                 ->setBorderWidth('1px')
-                ->setBorderColor(config('line.main_color'))
+                ->setBorderColor(config('bot.main_color'))
                 ->setCornerRadius('4px');
 
             $boxes[] = $box;
@@ -112,7 +112,7 @@ class ComponentService
 
         $boxWrap = new BoxComponentBuilder('horizontal', $boxes, null, 'sm', 'xxl');
         $boxWrap->setHeight('40px')
-                ->setBorderColor(config('line.main_color'))
+                ->setBorderColor(config('bot.main_color'))
                 ->setCornerRadius('4px');
 
         return $boxWrap;
