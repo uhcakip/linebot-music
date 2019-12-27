@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "853dfa8d04d58d81cda32e662721e9a2",
+    "content-hash": "aa16bf085f74f42a8f976766860d4b16",
     "packages": [
         {
             "name": "dnoegel/php-xdg-base-dir",
@@ -997,16 +997,16 @@
         },
         {
             "name": "linecorp/line-bot-sdk",
-            "version": "3.15.0",
+            "version": "4.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/line/line-bot-sdk-php.git",
-                "reference": "c0d9e32a910378598b59e358d757a9f801da1e98"
+                "reference": "189c4adc7f7e64592146ae3a285633019ef4673a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/line/line-bot-sdk-php/zipball/c0d9e32a910378598b59e358d757a9f801da1e98",
-                "reference": "c0d9e32a910378598b59e358d757a9f801da1e98",
+                "url": "https://api.github.com/repos/line/line-bot-sdk-php/zipball/189c4adc7f7e64592146ae3a285633019ef4673a",
+                "reference": "189c4adc7f7e64592146ae3a285633019ef4673a",
                 "shasum": ""
             },
             "require": {
@@ -1020,9 +1020,7 @@
                 "indigophp/hash-compat": "~1.1.0",
                 "phpmd/phpmd": "~2.4",
                 "phpunit/phpunit": "^4.8.24||^5||^6",
-                "squizlabs/php_codesniffer": "~2.6||^3",
-                "symfony/config": "^3.3",
-                "symfony/dependency-injection": "^3.3"
+                "squizlabs/php_codesniffer": "~2.6||^3"
             },
             "suggest": {
                 "apigen/apigen": "Install with roave/better-reflection:dev-master to generate docs",
@@ -1067,7 +1065,7 @@
                 "line",
                 "sdk"
             ],
-            "time": "2019-11-01T09:49:14+00:00"
+            "time": "2019-12-17T03:21:15+00:00"
         },
         {
             "name": "monolog/monolog",
