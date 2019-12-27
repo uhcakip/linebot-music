@@ -6,6 +6,7 @@ use App\Repos\RecordRepo;
 use Exception;
 use Illuminate\Support\Facades\Log;
 use LINE\LINEBot\Event\BaseEvent;
+use LINE\LINEBot\Event\FollowEvent;
 use LINE\LINEBot\Event\MessageEvent;
 use LINE\LINEBot\Event\MessageEvent\TextMessage;
 use LINE\LINEBot\Event\PostbackEvent;
@@ -13,19 +14,25 @@ use LINE\LINEBot\Event\PostbackEvent;
 class RecordService
 {
     protected $recordRepo;
+    protected $richMenuService;
     protected $messageService;
     protected $musicService;
 
     // var
     protected $eventObj;
     protected $record;
+    protected $notFoundMsg;
 
-    public function __construct(RecordRepo $recordRepo, MessageService $messageService, MusicService $musicService)
+    public function __construct(RecordRepo $recordRepo, RichMenuService $richMenuService, MessageService $messageService, MusicService $musicService)
     {
         // 注入
         $this->recordRepo = $recordRepo;
+        $this->richMenuService = $richMenuService;
         $this->messageService = $messageService;
         $this->musicService = $musicService;
+
+        // 404 message
+        $this->notFoundMsg = $this->messageService->createText('找不到相關的音樂資訊');
     }
 
     /**
@@ -49,6 +56,21 @@ class RecordService
         // 依照事件類別 call 對應的 function
         $handleFun = 'handle' . ucfirst($eventType);
         return $this->$handleFun();
+    }
+
+    /**
+     * 處理 follow 事件 ( 連結 rich menu )
+     *
+     * @throws Exception
+     */
+    public function handleFollow()
+    {
+        if (!$this->eventObj instanceof FollowEvent) {
+            throw new Exception('Varaible eventObj should be an instance of FollowEvent');
+        }
+
+        // verify user and link to specfic rich menu ...
+
     }
 
     /**
@@ -87,11 +109,11 @@ class RecordService
             // 點選按鈕「顯示歌手專輯」
             case 'find_album':
                 $albums = $this->musicService->getAlbums($data[1]);
-                return $this->messageService->createAlbumFlex($albums);
+                return $albums ? $this->messageService->createAlbumFlex($albums) : $this->notFoundMsg;
             // 點選按鈕「顯示專輯歌曲」
             case 'find_track':
                 $tracks = $this->musicService->getTracks($data[1]);
-                return $this->messageService->createFindTrackFlex($data, $tracks);
+                return $tracks ? $this->messageService->createFindTrackFlex($data, $tracks) : $this->notFoundMsg;
             // 點選按鈕「試聽」
             case 'preview':
                 $musicUrl = saveMusic($data[1], $data[2]);
@@ -122,7 +144,7 @@ class RecordService
         }
 
         if (!$result = $this->musicService->getResult($this->record->type, $this->eventObj->getText())) {
-            return $this->messageService->createText('找不到相關的音樂資訊');
+            return $this->notFoundMsg;
         }
 
         // 依照搜尋範圍 call 對應的 function

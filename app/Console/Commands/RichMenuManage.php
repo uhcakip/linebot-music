@@ -48,7 +48,9 @@ class RichMenuManage extends Command
                 $this->richMenuService->create();
                 break;
             case 'delete':
-                $this->richMenuService->delete();
+                $all = $this->choice('Delete all ?', ['Y', 'N']);
+                if ($all === 'Y') $this->richMenuService->deleteAll();
+                else $this->richMenuService->delete('');
                 break;
         }
 
