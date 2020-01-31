@@ -20,4 +20,4 @@
 5. 點選顯示相關歌手專輯，機器人回傳隨機 5 張專輯資訊
 6. 點選專輯歌曲，機器人回傳隨機 5 首該專輯歌曲
 
-![linebot-music-demo.gif](https://github.com/uhcakip/linebot-music/blob/master/storage/linebot-music-demo.gif?raw=true =500x)
+<img src="https://github.com/uhcakip/linebot-music/blob/master/storage/linebot-music-demo.gif?raw=true" width="55%">
