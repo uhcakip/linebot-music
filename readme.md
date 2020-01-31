@@ -1,5 +1,8 @@
 ## Music Bot
 
+### QR code
+![linebot-music-qrcode](https://github.com/uhcakip/linebot-music/blob/master/storage/demo/linebot-music-qrcode.png?raw=true)
+
 ### 說明
 - 結合 Line Bot 及 KKBox
 - 點選 Rich Menu 限定搜尋範圍 ( 歌手名、專輯名、歌名 ) 並輸入關鍵字搜尋，機器人會回傳對應的音樂資訊 ( Flex Message ) 或試聽音檔 ( Audio Message )
@@ -20,4 +23,4 @@
 5. 點選顯示相關歌手專輯，機器人回傳隨機 5 張專輯資訊
 6. 點選專輯歌曲，機器人回傳隨機 5 首該專輯歌曲
 
-<img src="https://github.com/uhcakip/linebot-music/blob/master/storage/linebot-music-demo.gif?raw=true" width="55%">
+<img src="https://github.com/uhcakip/linebot-music/blob/master/storage/demo/linebot-music-demo.gif?raw=true" width="55%">
