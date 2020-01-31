@@ -12,7 +12,7 @@
 - [line-bot-sdk-php](https://github.com/line/line-bot-sdk-php) : 用來串接 Line 機器人 
 - [OpenAPI-PHP](https://github.com/KKBOX/OpenAPI-PHP) : 用來搜尋音樂資訊 
 
-### Demo 影片
+### Demo
 1. 輸入歌曲關鍵字 TT ( 已事先選定搜尋範圍為歌曲 )
 2. 點選試聽，機器人回傳試聽檔
 3. 點選前往下載，導到試聽檔連結，Android 手機可點選下載
