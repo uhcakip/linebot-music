@@ -69,7 +69,7 @@ class RecordService
             throw new Exception('Varaible eventObj should be an instance of FollowEvent');
         }
 
-        // verify user and link to specfic rich menu ...
+        // verify user and link to a specfic rich menu ...
 
     }
 
