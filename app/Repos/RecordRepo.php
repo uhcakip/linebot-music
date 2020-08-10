@@ -9,7 +9,7 @@ class RecordRepo
 {
     public function getRecords(array $args, bool $all = true)
     {
-        $args = addDefaultKeys($args);
+        $args  = addDefaultKeys($args);
         $query = Record::query();
 
         if (($user   = Arr::get($args, 'user',   false)) !== false) $query->User($user);
@@ -27,8 +27,8 @@ class RecordRepo
     {
         $record = new Record();
 
-        $record->user   = Arr::get($args, 'user');
-        $record->type   = Arr::get($args, 'type');
+        $record->user = Arr::get($args, 'user');
+        $record->type = Arr::get($args, 'type');
         // $record->status = Arr::get($args, 'status');
 
         return $record->save();
@@ -36,7 +36,7 @@ class RecordRepo
 
     public function update(Record $record, array $args)
     {
-        if (($type    = Arr::get($args, 'type',    false)) !== false) $record->type = $type;
+        if (($type = Arr::get($args, 'type', false)) !== false) $record->type = $type;
         // if (($keyword = Arr::get($args, 'keyword', false)) !== false) $record->keyword = $keyword;
         // if (($status  = Arr::get($args, 'status',  false)) !== false) $record->status = $status;
 

@@ -59,14 +59,13 @@ class ComponentService
      */
     public function createBtn(string $hint, string $data)
     {
-        $postbackAction = new PostbackTemplateActionBuilder('btn', $data);
-
         $text = new TextComponentBuilder($hint);
         $text->setColor(config('bot.main_color'))
              ->setAlign('center')
              ->setOffsetTop('7.5px');
 
-        $box = new BoxComponentBuilder('vertical', [$text], null, 'sm', 'xxl', $postbackAction);
+        $pba = new PostbackTemplateActionBuilder('btn', $data);
+        $box = new BoxComponentBuilder('vertical', [$text], null, 'sm', 'xxl', $pba);
         $box->setHeight('40px')
             ->setBorderWidth('1px')
             ->setBorderColor(config('bot.main_color'))
@@ -84,12 +83,11 @@ class ComponentService
      */
     public function createTrackBtn(string $data)
     {
-        $boxes = [];
-
-        $hints = ['試聽', '前往下載'];
+        $boxes   = [];
+        $hints   = ['試聽', '前往下載'];
         $actions = [
             new PostbackTemplateActionBuilder('btn', $data),
-            new UriTemplateActionBuilder('url', preg_replace('/preview\|[^\|]+\|/', '', $data))
+            new UriTemplateActionBuilder('url', preg_replace('/preview\|[^|]+\|/', '', $data))
         ];
 
         for ($i = 0; $i < count($hints); $i++) {

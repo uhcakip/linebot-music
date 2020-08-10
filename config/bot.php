@@ -1,8 +1,6 @@
 <?php
 
 return [
-    # Line
-
     // basic setting
     'line_token'  => env('LINEBOT_TOKEN', ''),
     'line_id'     => env('LINEBOT_CHANNEL_ID', ''),
@@ -18,10 +16,4 @@ return [
 
     // flex message
     'main_color' => '#ffffff',
-
-    # KKBox
-
-    // basic setting
-    'kkbox_id'     => env('KKBOX_CLIENT_ID', ''),
-    'kkbox_secret' => env('KKBOX_CLIENT_SECERT', ''),
 ];

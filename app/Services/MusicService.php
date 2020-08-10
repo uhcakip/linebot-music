@@ -13,7 +13,7 @@ class MusicService
 
     public function __construct()
     {
-        $this->kkbox = new OpenAPI(config('bot.kkbox_id'), config('bot.kkbox_secret'));
+        $this->kkbox = new OpenAPI(config('kkbox.kkbox_id'), config('kkbox.kkbox_secret'));
         $this->kkbox->fetchAndUpdateAccessToken();
     }
 
@@ -26,12 +26,11 @@ class MusicService
      */
     public function getResult(string $type, string $keyword)
     {
-        $response = $this->kkbox->search($keyword, [$type], Territory::Taiwan, 0, 5);
+        $response   = $this->kkbox->search($keyword, [$type], Territory::Taiwan, 0, 5);
         $attributes = $type . 's';
-        $result = json_decode($response->getBody())->$attributes->data;
-        // Log::info(print_r($result, true));
+        // Log::info(print_r(json_decode($response->getBody())->$attributes->data, true));
 
-        return $result;
+        return json_decode($response->getBody())->$attributes->data;
     }
 
     /**
@@ -43,7 +42,8 @@ class MusicService
     public function getAlbums(string $artistId)
     {
         $response = $this->kkbox->fetchAlbumsOfArtist($artistId);
-        $result = json_decode($response->getBody())->data;
+        $result   = json_decode($response->getBody())->data;
+
         // 地區必須包含 TW 才有權限取得音樂資訊
         $filtered = Arr::where($result, function ($v) {
             return in_array('TW', $v->available_territories);
@@ -62,7 +62,7 @@ class MusicService
     public function getTracks(string $albumId)
     {
         $response = $this->kkbox->fetchTracksInAlbum($albumId);
-        $result = json_decode($response->getBody())->data;
+        $result   = json_decode($response->getBody())->data;
 
         // 隨機取 5 首歌
         return Arr::random($result, count($result) < 5 ? count($result) : 5);

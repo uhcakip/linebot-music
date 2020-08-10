@@ -27,34 +27,31 @@ class RichMenuService
      */
     public function create()
     {
-        // size
-        $size = new RichMenuSizeBuilder(843, 2500);
-        // bounds
+        $areas  = [];
+        $size   = new RichMenuSizeBuilder(843, 2500);
         $bounds = [
             new RichMenuAreaBoundsBuilder(0, 0, 833, 843),
             new RichMenuAreaBoundsBuilder(833, 0, 833, 843),
             new RichMenuAreaBoundsBuilder(1666, 0, 833, 843),
         ];
-        // actions
         $actions = [
             new PostbackTemplateActionBuilder('artist', 'artist', '請輸入歌手名'),
             new PostbackTemplateActionBuilder('track', 'track', '請輸入歌曲名'),
             new PostbackTemplateActionBuilder('album', 'album', '請輸入專輯名'),
         ];
-        // areas
-        $areas = [];
+
         for ($i = 0; $i < count($bounds); $i++) {
             $areas[] = new RichMenuAreaBuilder($bounds[$i], $actions[$i]);
         }
-        // build
-        $richMenu = new RichMenuBuilder($size, true, 'linebot-music', '選擇搜尋範圍', $areas);
 
-        // create
+        // build & create
+        $richMenu = new RichMenuBuilder($size, true, 'linebot-music', '選擇搜尋範圍', $areas);
         $response = $this->lineBot->createRichMenu($richMenu);
+
         // 建立完會回傳一組 richMenuId
         $richMenuId = $response->getJSONDecodedBody()['richMenuId'];
-        // upload image
         $this->lineBot->uploadRichMenuImage($richMenuId, 'public/rich_menu_img/line-rich-menu.png', 'image/png');
+
         // 設為預設 rich menu ( 每個 user 的聊天介面都會顯示 )
         $this->lineBot->setDefaultRichMenuId($richMenuId);
     }
@@ -68,6 +65,7 @@ class RichMenuService
     public function link(string $userId, string $richMenuName)
     {
         $list = $this->lineBot->getRichMenuList()->getJSONDecodedBody();
+
         foreach ($list['richmenus'] as $v) {
             if ($v['name'] === $richMenuName) {
                 // 不同 user 連結到不同的 rich menu ( link 完成後就可以用 getRichMenuId() 取得 richMenuId )
@@ -95,6 +93,7 @@ class RichMenuService
     public function delete(string $richMenuName)
     {
         $list = $this->lineBot->getRichMenuList()->getJSONDecodedBody();
+
         foreach ($list['richmenus'] as $v) {
             if ($v['name'] === $richMenuName) {
                 $this->lineBot->deleteRichMenu($richMenuName);
@@ -109,6 +108,7 @@ class RichMenuService
     public function deleteAll()
     {
         $list = $this->lineBot->getRichMenuList()->getJSONDecodedBody();
+
         foreach ($list['richmenus'] as $v) {
             $this->lineBot->deleteRichMenu($v['richMenuId']);
         }

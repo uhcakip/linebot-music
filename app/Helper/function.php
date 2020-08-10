@@ -34,7 +34,8 @@ if (!function_exists('getPreviewUrl')) {
     function getPreviewUrl(string $pageUrl)
     {
         $client = new Client();
-        $html = $client->get($pageUrl)->getBody()->getContents();
+        $html   = $client->get($pageUrl)->getBody()->getContents();
+
         preg_match('/<meta property="music:preview_url:url" content="(.+)"/', $html, $matches);
 
         return $matches[1];
@@ -54,8 +55,13 @@ if (!function_exists('saveMusic')) {
         $dir = 'music';
         $path = $dir . '/' . $trackId . '.mp3';
 
-        if (!file_exists($dir)) mkdir($dir);
-        if (!file_exists($path)) file_put_contents(public_path($path), file_get_contents($previewUrl));
+        if (!file_exists($dir)) {
+            mkdir($dir);
+        }
+
+        if (!file_exists($path)) {
+            file_put_contents(public_path($path), file_get_contents($previewUrl));
+        }
 
         return asset($path);
     }

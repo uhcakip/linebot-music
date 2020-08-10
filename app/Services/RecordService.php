@@ -46,15 +46,17 @@ class RecordService
     {
         // Log::info(print_r($eventObj, true));
         $this->eventObj = $eventObj;
-        $this->record = $this->recordRepo->getRecords(['user' => $this->eventObj->getUserId()], false)->first();
+        $this->record   = $this->recordRepo->getRecords(['user' => $this->eventObj->getUserId()], false)->first();
 
         $eventType = $this->eventObj->getType();
+
         if (!in_array($eventType, ['postback', 'message'])) {
             throw new Exception('Type of event should be postback or message');
         }
 
         // 依照事件類別 call 對應的 function
         $handleFun = 'handle' . ucfirst($eventType);
+
         return $this->$handleFun();
     }
 
@@ -149,6 +151,7 @@ class RecordService
 
         // 依照搜尋範圍 call 對應的 function
         $createFun = 'create' . ucfirst($this->record->type) . 'Flex';
+
         return $this->messageService->$createFun($result);
     }
 }

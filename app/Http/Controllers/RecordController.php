@@ -24,21 +24,21 @@ class RecordController extends Controller
         $this->recordService = $recordService;
 
         $this->httpClient = new CurlHTTPClient(config('bot.line_token'));
-        $this->lineBot = new LINEBot($this->httpClient, ['channelSecret' => config('bot.line_secret')]);
+        $this->lineBot    = new LINEBot($this->httpClient, ['channelSecret' => config('bot.line_secret')]);
     }
 
     public function handle(Request $request)
     {
         try {
-            // 回傳對應的 Event 物件 ( array )
-            $event = $this->lineBot->parseEventRequest(
-                $request->getContent(),
-                $request->header(HTTPHeader::LINE_SIGNATURE)
-            );
+            $event    = $this->lineBot->parseEventRequest($request->getContent(), $request->header(HTTPHeader::LINE_SIGNATURE)); // 回傳對應的 event 物件 ( array )
             $eventObj = Arr::first($event);
             $replyMsg = $this->recordService->handle($eventObj);
             $response = $this->lineBot->replyMessage($eventObj->getReplyToken(), $replyMsg);
-            if (!$response->isSucceeded()) throw new Exception($response->getRawBody());
+
+            if (!$response->isSucceeded()) {
+                throw new Exception($response->getRawBody());
+            }
+
         } catch (Exception $ex) {
             Log::error($ex);
         }

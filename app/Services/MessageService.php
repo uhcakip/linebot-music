@@ -39,22 +39,18 @@ class MessageService
         $bubbles = [];
 
         foreach ($tracks as $k => $v) {
-            // 順序需為 lg ( 歌名 ) -> sm ( 歌手名 ) -> btn ( 按鈕 )
-            $musicBoxes = [
+            $musicBoxes = [ // 順序需為 lg ( 歌名 ) -> sm ( 歌手名 ) -> btn ( 按鈕 )
                 $this->componentService->createLgText($v->name),
                 $this->componentService->createSmText($v->album->artist->name),
                 $this->componentService->createTrackBtn('preview|' . $v->id . '|' . getPreviewUrl($v->url))
             ];
 
-            // 順序需為 img ( 專輯圖片 ) -> music ( 音樂資訊 + 按鈕 )
-            $bodyBoxes = [
+            $bodyBoxes = [ // 順序需為 img ( 專輯圖片 ) -> music ( 音樂資訊 + 按鈕 )
                 $this->componentService->createImg($v->album->images[1]->url),
                 $this->componentService->createMusic($musicBoxes)
             ];
 
-            // 組成 body
             $body = $this->componentService->createBody($bodyBoxes);
-            // 組成 bubble
             $bubbles[] = $this->componentService->createBubble($body);
         }
 
@@ -76,22 +72,18 @@ class MessageService
         $bubbles = [];
 
         foreach ($tracks as $k => $v) {
-            // 順序需為 lg ( 歌名 ) -> sm ( 歌手名 ) -> btn ( 按鈕 )
-            $musicBoxes = [
+            $musicBoxes = [ // 順序需為 lg ( 歌名 ) -> sm ( 歌手名 ) -> btn ( 按鈕 )
                 $this->componentService->createLgText($v->name),
                 $this->componentService->createSmText($data[2]),
                 $this->componentService->createTrackBtn('preview|' . $v->id . '|' . getPreviewUrl($v->url))
             ];
 
-            // 順序需為 img ( 專輯圖片 ) -> music ( 音樂資訊 + 按鈕 )
-            $bodyBoxes = [
+            $bodyBoxes = [ // 順序需為 img ( 專輯圖片 ) -> music ( 音樂資訊 + 按鈕 )
                 $this->componentService->createImg($data[3]),
                 $this->componentService->createMusic($musicBoxes)
             ];
 
-            // 組成 body
             $body = $this->componentService->createBody($bodyBoxes);
-            // 組成 bubble
             $bubbles[] = $this->componentService->createBubble($body);
         }
 
@@ -112,21 +104,17 @@ class MessageService
         $bubbles = [];
 
         foreach ($artists as $k => $v) {
-            // 順序需為 lg ( 歌手名 ) -> btn ( 按鈕 )
-            $musicBoxes = [
+            $musicBoxes = [ // 順序需為 lg ( 歌手名 ) -> btn ( 按鈕 )
                 $this->componentService->createLgText($v->name),
                 $this->componentService->createBtn('顯示歌手專輯', 'find_album|' . $v->id)
             ];
 
-            // 順序需為 img ( 歌手圖片 ) -> music ( 音樂資訊 + 按鈕 )
-            $bodyBoxes = [
+            $bodyBoxes = [ // 順序需為 img ( 歌手圖片 ) -> music ( 音樂資訊 + 按鈕 )
                 $this->componentService->createImg($v->images[1]->url),
                 $this->componentService->createMusic($musicBoxes)
             ];
 
-            // 組成 body
             $body = $this->componentService->createBody($bodyBoxes);
-            // 組成 bubble
             $bubbles[] = $this->componentService->createBubble($body);
         }
 
@@ -147,22 +135,18 @@ class MessageService
         $bubbles = [];
 
         foreach ($albums as $k => $v) {
-            // 順序需為 lg ( 專輯名 ) -> sm ( 歌手名 ) -> btn ( 按鈕 )
-            $musicBoxes = [
+            $musicBoxes = [ // 順序需為 lg ( 專輯名 ) -> sm ( 歌手名 ) -> btn ( 按鈕 )
                 $this->componentService->createLgText($v->name),
                 $this->componentService->createSmText($v->artist->name),
                 $this->componentService->createBtn('顯示專輯歌曲', 'find_track|' . $v->id . '|' . $v->artist->name . '|' . $v->images[1]->url)
             ];
 
-            // 順序需為 img ( 專輯圖片 ) -> music ( 音樂資訊 + 按鈕 )
-            $bodyBoxs = [
+            $bodyBoxs = [ // 順序需為 img ( 專輯圖片 ) -> music ( 音樂資訊 + 按鈕 )
                 $this->componentService->createImg($v->images[1]->url),
                 $this->componentService->createMusic($musicBoxes)
             ];
 
-            // 組成 body
             $body = $this->componentService->createBody($bodyBoxs);
-            // 組成 bubble
             $bubbles[] = $this->componentService->createBubble($body);
         }
 
