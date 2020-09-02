@@ -2,6 +2,19 @@
 
 use GuzzleHttp\Client;
 
+if (!function_exists('writeJson')) {
+    /**
+     * 返回 json 格式
+     *
+     * @param array $args
+     * @return false|string
+     */
+    function writeJson(array $args)
+    {
+        return json_encode($args, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+    }
+}
+
 if (!function_exists('getDefalutColumns')) {
     /**
      * repo 加入預設欄位

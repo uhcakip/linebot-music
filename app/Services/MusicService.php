@@ -34,6 +34,8 @@ class MusicService
             return in_array('TW', $result->available_territories);
         });
 
+        //Log::info(ucfirst($type) . ' search result: ' . writeJson($results->all()));
+
         return $results->take($results->count() < 5 ? $results->count() : 5)->all();
     }
 
