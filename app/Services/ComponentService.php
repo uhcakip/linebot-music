@@ -100,7 +100,8 @@ class ComponentService
             $box->setHeight('40px')
                 ->setBorderWidth('1px')
                 ->setBorderColor(config('bot.main_color'))
-                ->setCornerRadius('4px');
+                ->setCornerRadius('4px')
+                ->setOffsetStart('-10px');
 
             $boxes[] = $box;
         }
