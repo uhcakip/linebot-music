@@ -19,7 +19,7 @@ class RichMenuManage extends Command
      *
      * @var string
      */
-    protected $description = '管理 Rich Menu';
+    protected $description = '管理 Linebot Rich Menu';
 
     protected $richMenuService;
 
@@ -49,9 +49,12 @@ class RichMenuManage extends Command
                 break;
             case 'delete':
                 $all = $this->choice('Delete all ?', ['Y', 'N']);
-                if ($all === 'Y') $this->richMenuService->deleteAll();
-                else $this->richMenuService->delete('');
-                break;
+
+                if ($all === 'Y') {
+                    $this->richMenuService->deleteAll();
+                } else {
+                    $this->richMenuService->delete('');
+                }
         }
 
         $this->info('執行完成');

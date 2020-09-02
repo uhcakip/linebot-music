@@ -50,7 +50,7 @@ class MusicService
         });
 
         // 隨機取 5 張專輯
-        return Arr::random($filtered, count($filtered) < 5 ? count($filtered) : 5);
+        return Arr::random($filtered, (count($filtered) < 5 ? count($filtered) : 5));
     }
 
     /**
@@ -65,6 +65,6 @@ class MusicService
         $result   = json_decode($response->getBody())->data;
 
         // 隨機取 5 首歌
-        return Arr::random($result, count($result) < 5 ? count($result) : 5);
+        return Arr::random($result, (count($result) < 5 ? count($result) : 5));
     }
 }

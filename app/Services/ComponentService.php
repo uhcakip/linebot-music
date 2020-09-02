@@ -85,10 +85,7 @@ class ComponentService
     {
         $boxes   = [];
         $hints   = ['試聽', '前往下載'];
-        $actions = [
-            new PostbackTemplateActionBuilder('btn', $data),
-            new UriTemplateActionBuilder('url', preg_replace('/preview\|[^|]+\|/', '', $data))
-        ];
+        $actions = [new PostbackTemplateActionBuilder('btn', $data), new UriTemplateActionBuilder('url', preg_replace('/preview\|[^|]+\|/', '', $data))];
 
         for ($i = 0; $i < count($hints); $i++) {
             $text = new TextComponentBuilder($hints[$i]);

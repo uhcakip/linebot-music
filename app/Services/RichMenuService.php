@@ -19,7 +19,7 @@ class RichMenuService
     public function __construct()
     {
         $this->httpClient = new CurlHTTPClient(config('bot.line_token'));
-        $this->lineBot = new LINEBot($this->httpClient, ['channelSecret' => config('bot.line_secret')]);
+        $this->lineBot    = new LINEBot($this->httpClient, ['channelSecret' => config('bot.line_secret')]);
     }
 
     /**
@@ -44,16 +44,12 @@ class RichMenuService
             $areas[] = new RichMenuAreaBuilder($bounds[$i], $actions[$i]);
         }
 
-        // build & create
-        $richMenu = new RichMenuBuilder($size, true, 'linebot-music', '選擇搜尋範圍', $areas);
-        $response = $this->lineBot->createRichMenu($richMenu);
+        $richMenu   = new RichMenuBuilder($size, true, 'linebot-music', '選擇搜尋範圍', $areas);
+        $response   = $this->lineBot->createRichMenu($richMenu)->getJSONDecodedBody(); // create 完會回傳一組 richMenuId
+        $richMenuId = $response['richMenuId'];
 
-        // 建立完會回傳一組 richMenuId
-        $richMenuId = $response->getJSONDecodedBody()['richMenuId'];
         $this->lineBot->uploadRichMenuImage($richMenuId, 'public/rich_menu_img/line-rich-menu.png', 'image/png');
-
-        // 設為預設 rich menu ( 每個 user 的聊天介面都會顯示 )
-        $this->lineBot->setDefaultRichMenuId($richMenuId);
+        $this->lineBot->setDefaultRichMenuId($richMenuId); // 設為預設 rich menu ( 每個 user 的聊天介面都會顯示 )
     }
 
     /**
@@ -64,12 +60,13 @@ class RichMenuService
      */
     public function link(string $userId, string $richMenuName)
     {
-        $list = $this->lineBot->getRichMenuList()->getJSONDecodedBody();
+        $menus = $this->lineBot->getRichMenuList()->getJSONDecodedBody();
+        $menus = $menus['richmenus'];
 
-        foreach ($list['richmenus'] as $v) {
-            if ($v['name'] === $richMenuName) {
+        foreach ($menus as $menu) {
+            if ($menu['name'] === $richMenuName) {
                 // 不同 user 連結到不同的 rich menu ( link 完成後就可以用 getRichMenuId() 取得 richMenuId )
-                $this->lineBot->linkRichMenu($userId, $v['richMenuId']);
+                $this->lineBot->linkRichMenu($userId, $menu['richMenuId']);
                 break;
             }
         }
@@ -92,10 +89,11 @@ class RichMenuService
      */
     public function delete(string $richMenuName)
     {
-        $list = $this->lineBot->getRichMenuList()->getJSONDecodedBody();
+        $menus = $this->lineBot->getRichMenuList()->getJSONDecodedBody();
+        $menus = $menus['richmenus'];
 
-        foreach ($list['richmenus'] as $v) {
-            if ($v['name'] === $richMenuName) {
+        foreach ($menus as $menu) {
+            if ($menu['name'] === $richMenuName) {
                 $this->lineBot->deleteRichMenu($richMenuName);
                 break;
             }
@@ -107,10 +105,11 @@ class RichMenuService
      */
     public function deleteAll()
     {
-        $list = $this->lineBot->getRichMenuList()->getJSONDecodedBody();
+        $menus = $this->lineBot->getRichMenuList()->getJSONDecodedBody();
+        $menus = $menus['richmenus'];
 
-        foreach ($list['richmenus'] as $v) {
-            $this->lineBot->deleteRichMenu($v['richMenuId']);
+        foreach ($menus as $menu) {
+            $this->lineBot->deleteRichMenu($menu['richMenuId']);
         }
     }
 }

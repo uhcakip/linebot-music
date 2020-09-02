@@ -38,19 +38,21 @@ class MessageService
     {
         $bubbles = [];
 
-        foreach ($tracks as $k => $v) {
-            $musicBoxes = [ // 順序需為 lg ( 歌名 ) -> sm ( 歌手名 ) -> btn ( 按鈕 )
-                $this->componentService->createLgText($v->name),
-                $this->componentService->createSmText($v->album->artist->name),
-                $this->componentService->createTrackBtn('preview|' . $v->id . '|' . getPreviewUrl($v->url))
+        foreach ($tracks as $track) {
+            // 順序需為 lg ( 歌名 ) -> sm ( 歌手名 ) -> btn ( 按鈕 )
+            $musicBoxes = [
+                $this->componentService->createLgText($track->name),
+                $this->componentService->createSmText($track->album->artist->name),
+                $this->componentService->createTrackBtn('preview|' . $track->id . '|' . getPreviewUrl($track->url))
             ];
 
-            $bodyBoxes = [ // 順序需為 img ( 專輯圖片 ) -> music ( 音樂資訊 + 按鈕 )
-                $this->componentService->createImg($v->album->images[1]->url),
+            // 順序需為 img ( 專輯圖片 ) -> music ( 音樂資訊 + 按鈕 )
+            $bodyBoxes = [
+                $this->componentService->createImg($track->album->images[1]->url),
                 $this->componentService->createMusic($musicBoxes)
             ];
 
-            $body = $this->componentService->createBody($bodyBoxes);
+            $body      = $this->componentService->createBody($bodyBoxes);
             $bubbles[] = $this->componentService->createBubble($body);
         }
 
@@ -61,7 +63,7 @@ class MessageService
     }
 
     /**
-     * 建立歌曲 Flex Message ( 點選「顯示專輯歌曲」 )
+     * 建立歌曲 Flex Message ( 點選 "顯示專輯歌曲" )
      *
      * @param array $data
      * @param array $tracks
@@ -71,19 +73,21 @@ class MessageService
     {
         $bubbles = [];
 
-        foreach ($tracks as $k => $v) {
-            $musicBoxes = [ // 順序需為 lg ( 歌名 ) -> sm ( 歌手名 ) -> btn ( 按鈕 )
-                $this->componentService->createLgText($v->name),
+        foreach ($tracks as $track) {
+            // 順序需為 lg ( 歌名 ) -> sm ( 歌手名 ) -> btn ( 按鈕 )
+            $musicBoxes = [
+                $this->componentService->createLgText($track->name),
                 $this->componentService->createSmText($data[2]),
-                $this->componentService->createTrackBtn('preview|' . $v->id . '|' . getPreviewUrl($v->url))
+                $this->componentService->createTrackBtn('preview|' . $track->id . '|' . getPreviewUrl($track->url))
             ];
 
-            $bodyBoxes = [ // 順序需為 img ( 專輯圖片 ) -> music ( 音樂資訊 + 按鈕 )
+            // 順序需為 img ( 專輯圖片 ) -> music ( 音樂資訊 + 按鈕 )
+            $bodyBoxes = [
                 $this->componentService->createImg($data[3]),
                 $this->componentService->createMusic($musicBoxes)
             ];
 
-            $body = $this->componentService->createBody($bodyBoxes);
+            $body      = $this->componentService->createBody($bodyBoxes);
             $bubbles[] = $this->componentService->createBubble($body);
         }
 
@@ -103,18 +107,20 @@ class MessageService
     {
         $bubbles = [];
 
-        foreach ($artists as $k => $v) {
-            $musicBoxes = [ // 順序需為 lg ( 歌手名 ) -> btn ( 按鈕 )
-                $this->componentService->createLgText($v->name),
-                $this->componentService->createBtn('顯示歌手專輯', 'find_album|' . $v->id)
+        foreach ($artists as $artist) {
+            // 順序需為 lg ( 歌手名 ) -> btn ( 按鈕 )
+            $musicBoxes = [
+                $this->componentService->createLgText($artist->name),
+                $this->componentService->createBtn('顯示歌手專輯', 'find_album|' . $artist->id)
             ];
 
-            $bodyBoxes = [ // 順序需為 img ( 歌手圖片 ) -> music ( 音樂資訊 + 按鈕 )
-                $this->componentService->createImg($v->images[1]->url),
+            // 順序需為 img ( 歌手圖片 ) -> music ( 音樂資訊 + 按鈕 )
+            $bodyBoxes = [
+                $this->componentService->createImg($artist->images[1]->url),
                 $this->componentService->createMusic($musicBoxes)
             ];
 
-            $body = $this->componentService->createBody($bodyBoxes);
+            $body      = $this->componentService->createBody($bodyBoxes);
             $bubbles[] = $this->componentService->createBubble($body);
         }
 
@@ -125,7 +131,7 @@ class MessageService
     }
 
     /**
-     * 建立專輯 Flex Message ( 透過關鍵字搜尋 or 點選「顯示歌手專輯」 )
+     * 建立專輯 Flex Message ( 透過關鍵字搜尋 or 點選 "顯示歌手專輯" )
      *
      * @param array $albums
      * @return FlexMessageBuilder
@@ -134,19 +140,21 @@ class MessageService
     {
         $bubbles = [];
 
-        foreach ($albums as $k => $v) {
-            $musicBoxes = [ // 順序需為 lg ( 專輯名 ) -> sm ( 歌手名 ) -> btn ( 按鈕 )
-                $this->componentService->createLgText($v->name),
-                $this->componentService->createSmText($v->artist->name),
-                $this->componentService->createBtn('顯示專輯歌曲', 'find_track|' . $v->id . '|' . $v->artist->name . '|' . $v->images[1]->url)
+        foreach ($albums as $album) {
+            // 順序需為 lg ( 專輯名 ) -> sm ( 歌手名 ) -> btn ( 按鈕 )
+            $musicBoxes = [
+                $this->componentService->createLgText($album->name),
+                $this->componentService->createSmText($album->artist->name),
+                $this->componentService->createBtn('顯示專輯歌曲', 'find_track|' . $album->id . '|' . $album->artist->name . '|' . $album->images[1]->url)
             ];
 
-            $bodyBoxs = [ // 順序需為 img ( 專輯圖片 ) -> music ( 音樂資訊 + 按鈕 )
-                $this->componentService->createImg($v->images[1]->url),
+            // 順序需為 img ( 專輯圖片 ) -> music ( 音樂資訊 + 按鈕 )
+            $bodyBoxs = [
+                $this->componentService->createImg($album->images[1]->url),
                 $this->componentService->createMusic($musicBoxes)
             ];
 
-            $body = $this->componentService->createBody($bodyBoxs);
+            $body      = $this->componentService->createBody($bodyBoxs);
             $bubbles[] = $this->componentService->createBubble($body);
         }
 
