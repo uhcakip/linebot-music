@@ -31,7 +31,7 @@ class MusicService
 
         $results = json_decode($response->getBody())->$attribute->data;
         $results = collect($results)->filter(function ($result) { // 地區必須包含 TW 才有權限取得音樂資訊
-            return in_array('TW', $result->available_territories);
+            return isset($result->available_territories) ? in_array('TW', $result->available_territories) : $result;
         });
 
         //Log::info(ucfirst($type) . ' search result: ' . writeJson($results->all()));
