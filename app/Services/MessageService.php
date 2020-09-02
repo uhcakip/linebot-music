@@ -57,7 +57,7 @@ class MessageService
         }
 
         $carousel = $this->componentService->createCarousel($bubbles);
-        // Log::info(print_r($carousel, true));
+        //Log::info('Track carousel: ' . print_r($carousel, true));
 
         return new FlexMessageBuilder('查詢結果', $carousel);
     }
@@ -92,7 +92,7 @@ class MessageService
         }
 
         $carousel = $this->componentService->createCarousel($bubbles);
-        // Log::info(print_r($carousel, true));
+        //Log::info('Find track carousel: ' . print_r($carousel, true));
 
         return new FlexMessageBuilder('查詢結果', $carousel);
     }
@@ -125,7 +125,7 @@ class MessageService
         }
 
         $carousel = $this->componentService->createCarousel($bubbles);
-        // Log::info(print_r($carousel, true));
+        //Log::info('Artist carousel: ' . print_r($carousel, true));
 
         return new FlexMessageBuilder('查詢結果', $carousel);
     }
@@ -159,7 +159,7 @@ class MessageService
         }
 
         $carousel = $this->componentService->createCarousel($bubbles);
-        // Log::info(print_r($carousel, true));
+        //Log::info('Album carousel: ' . print_r($carousel, true));
 
         return new FlexMessageBuilder('查詢結果', $carousel);
     }

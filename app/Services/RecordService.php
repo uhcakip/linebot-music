@@ -48,7 +48,7 @@ class RecordService
      */
     public function handle(BaseEvent $eventObj)
     {
-        // Log::info(print_r($eventObj, true));
+        //Log::info('Event object: ' . print_r($eventObj, true));
         $this->eventObj = $eventObj;
         $this->record   = $this->recordRepo->getRecords(['user' => $this->eventObj->getUserId()], false)->first();
 
@@ -150,13 +150,13 @@ class RecordService
             return $this->messageService->createText('請輸入文字');
         }
 
-        if (!$result = $this->musicService->getResult($this->record->type, $this->eventObj->getText())) {
+        if (!$results = $this->musicService->getResult($this->record->type, $this->eventObj->getText())) {
             return $this->notFoundMsg;
         }
 
         // 依照搜尋範圍 call 對應的 function
         $createFun = 'create' . ucfirst($this->record->type) . 'Flex';
 
-        return $this->messageService->$createFun($result);
+        return $this->messageService->$createFun($results);
     }
 }
