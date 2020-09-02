@@ -1,26 +1,21 @@
 <?php
 
 use GuzzleHttp\Client;
-use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\Log;
 
-if (!function_exists('addDefaultKeys')) {
+if (!function_exists('getDefalutColumns')) {
     /**
-     * 加入預設欄位 ( repo )
+     * repo 加入預設欄位
      *
-     * @param array $args
      * @return array
      */
-    function addDefaultKeys(array $args)
+    function getDefalutColumns()
     {
-        $defaults = [
+        return [
             'order' => 'updated_at',
             'sort'  => 'desc',
             'skip'  => 0,
-            'take'  => Arr::get($args, 'take', 100000),
+            'take'  => 100000
         ];
-
-        return $args + $defaults;
     }
 }
 
@@ -52,7 +47,7 @@ if (!function_exists('saveMusic')) {
      */
     function saveMusic(string $trackId, string $previewUrl)
     {
-        $dir = 'music';
+        $dir  = 'music';
         $path = $dir . '/' . $trackId . '.mp3';
 
         if (!file_exists($dir)) {

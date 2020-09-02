@@ -9,7 +9,7 @@ class RecordRepo
 {
     public function getRecords(array $args, bool $all = true)
     {
-        $args  = addDefaultKeys($args);
+        $args += getDefalutColumns();
         $query = Record::query();
 
         if (($user   = Arr::get($args, 'user',   false)) !== false) $query->User($user);
