@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\CustomException;
 use App\Services\RecordService;
 use Exception;
 use Illuminate\Http\Request;
@@ -36,11 +37,11 @@ class RecordController extends Controller
             $response = $this->lineBot->replyMessage($eventObj->getReplyToken(), $replyMsg);
 
             if (!$response->isSucceeded()) {
-                throw new Exception($response->getRawBody());
+                throw new CustomException($response->getRawBody());
             }
 
-        } catch (Exception $ex) {
-            Log::error($ex);
+        } catch (Exception $e) {
+            Log::error($e);
         }
     }
 }
