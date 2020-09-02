@@ -26,11 +26,15 @@ class MusicService
      */
     public function getResult(string $type, string $keyword)
     {
-        $response   = $this->kkbox->search($keyword, [$type], Territory::Taiwan, 0, 5);
-        $attributes = $type . 's';
-        // Log::info(print_r(json_decode($response->getBody())->$attributes->data, true));
+        $response  = $this->kkbox->search($keyword, [$type], Territory::Taiwan, 0, 30);
+        $attribute = $type . 's';
 
-        return json_decode($response->getBody())->$attributes->data;
+        $results = json_decode($response->getBody())->$attribute->data;
+        $results = collect($results)->filter(function ($result) { // 地區必須包含 TW 才有權限取得音樂資訊
+            return in_array('TW', $result->available_territories);
+        });
+
+        return $results->take($results->count() < 5 ? $results->count() : 5)->all();
     }
 
     /**
@@ -42,15 +46,14 @@ class MusicService
     public function getAlbums(string $artistId)
     {
         $response = $this->kkbox->fetchAlbumsOfArtist($artistId);
-        $result   = json_decode($response->getBody())->data;
 
-        // 地區必須包含 TW 才有權限取得音樂資訊
-        $filtered = Arr::where($result, function ($v) {
-            return in_array('TW', $v->available_territories);
+        $results = json_decode($response->getBody())->data;
+        $results = collect($results)->filter(function ($result) { // 地區必須包含 TW 才有權限取得音樂資訊
+            return in_array('TW', $result->available_territories);
         });
 
         // 隨機取 5 張專輯
-        return Arr::random($filtered, (count($filtered) < 5 ? count($filtered) : 5));
+        return $results->random($results->count() < 5 ? $results->count() : 5)->all();
     }
 
     /**
