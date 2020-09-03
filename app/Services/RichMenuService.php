@@ -23,7 +23,7 @@ class RichMenuService
     }
 
     /**
-     * 建立 Rich Menu
+     * 建立 rich menu
      */
     public function create()
     {
