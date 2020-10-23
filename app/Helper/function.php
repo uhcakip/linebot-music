@@ -6,12 +6,26 @@ if (!function_exists('writeJson')) {
     /**
      * 返回 json 格式
      *
-     * @param array $args
+     * @param $args
      * @return false|string
      */
-    function writeJson(array $args)
+    function writeJson($args)
     {
         return json_encode($args, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+    }
+}
+
+if (!function_exists('buildLogMsg')) {
+    /**
+     * 客製 log 訊息
+     *
+     * @param string $msg
+     * @param string $data
+     * @return string
+     */
+    function buildLogMsg(string $msg, string $data = '')
+    {
+        return $data ? "[ $msg ]: $data" : "[ $msg ]";
     }
 }
 
@@ -74,21 +88,3 @@ if (!function_exists('saveMusic')) {
         return asset($path);
     }
 }
-
-/*
-if (!function_exists('filterAlbumInfo')) {
-    function filterAlbumInfo(array $args)
-    {
-        $last = [];
-        $albumName = '';
-
-        foreach ($args as $k => $v) {
-            if (count($last) === 5) break;
-            if ($albumName !== $v->name) $last[$k] = $v;
-            $albumName = $v->name;
-        }
-
-        return $last;
-    }
-}
-*/

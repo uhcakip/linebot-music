@@ -31,10 +31,14 @@ class RecordController extends Controller
     public function handle(Request $request)
     {
         try {
-            $event    = $this->lineBot->parseEventRequest($request->getContent(), $request->header(HTTPHeader::LINE_SIGNATURE)); // 回傳對應的 event 物件 ( array )
-            $eventObj = Arr::first($event);
-            $replyMsg = $this->recordService->handle($eventObj);
-            $response = $this->lineBot->replyMessage($eventObj->getReplyToken(), $replyMsg);
+            $event = $this->lineBot->parseEventRequest( // 回傳對應的 event 物件 ( array )
+                $request->getContent(),
+                $request->header(HTTPHeader::LINE_SIGNATURE)
+            );
+
+            $event    = Arr::first($event);
+            $replyMsg = $this->recordService->handle($event);
+            $response = $this->lineBot->replyMessage($event->getReplyToken(), $replyMsg);
 
             if (!$response->isSucceeded()) {
                 throw new CustomException($response->getRawBody());

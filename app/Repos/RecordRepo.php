@@ -12,9 +12,9 @@ class RecordRepo
         $args += getDefalutColumns();
         $query = Record::query();
 
-        if (($user   = Arr::get($args, 'user',   false)) !== false) $query->User($user);
-        if (($type   = Arr::get($args, 'type',   false)) !== false) $query->Type($type);
-        if (($status = Arr::get($args, 'status', false)) !== false) $query->Status($status);
+        if (($user   = Arr::get($args, 'user',   false)) !== false) $query->user($user);
+        if (($type   = Arr::get($args, 'type',   false)) !== false) $query->type($type);
+        if (($status = Arr::get($args, 'status', false)) !== false) $query->status($status);
 
         $query->orderBy($args['order'], $args['sort'])
               ->skip($args['skip'])
@@ -28,7 +28,7 @@ class RecordRepo
         $record = new Record();
 
         $record->user = Arr::get($args, 'user');
-        $record->type = Arr::get($args, 'type');
+        $record->type = Arr::get($args, 'type', 'track');
         // $record->status = Arr::get($args, 'status');
 
         return $record->save();

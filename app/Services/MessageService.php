@@ -63,7 +63,7 @@ class MessageService
     }
 
     /**
-     * 建立歌曲 flex message ( 點選 "顯示專輯歌曲" )
+     * 建立歌曲 flex message ( 顯示專輯歌曲 )
      *
      * @param array $data
      * @param array $tracks
@@ -131,7 +131,7 @@ class MessageService
     }
 
     /**
-     * 建立專輯 flex message ( 透過關鍵字搜尋 or 點選 "顯示歌手專輯" )
+     * 建立專輯 flex message ( 透過關鍵字搜尋 or 顯示歌手專輯 )
      *
      * @param array $albums
      * @return FlexMessageBuilder
