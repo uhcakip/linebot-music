@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Exceptions\CustomException;
 use App\Repos\RecordRepo;
 use Exception;
 use Illuminate\Support\Facades\Log;
@@ -38,21 +39,23 @@ class RecordService
      *
      * @param BaseEvent $event
      * @return mixed
+     * @throws CustomException
      */
     public function handle(BaseEvent $event)
     {
-        $eventTypes = ['postback', 'message'];
+        $handleTypes = ['postback', 'message', 'follow'];
+        $eventType   = $event->getType();
 
-        foreach ($eventTypes as $eventType) {
-            if ($event->getType() === $eventType) {
-                $this->event  = $event;
-                $this->record = $this->recordRepo->getRecords(['user' => $this->event->getUserId()], false)->first();
-
-                // 依照事件類別 call 對應的 function
-                $handleFunction = 'handle' . ucfirst($eventType);
-                return $this->$handleFunction();
-            }
+        if (!in_array($eventType, $handleTypes)) {
+            throw new CustomException(buildLogMsg('不需處理的事件類別', writeJson(objToArr($event))));
         }
+
+        $this->event  = $event;
+        $this->record = $this->recordRepo->getRecords(['user' => $this->event->getUserId()], false)->first();
+
+        // 依照事件類別 call 對應的 function
+        $handleFunction = 'handle' . ucfirst($eventType);
+        return $this->$handleFunction();
     }
 
     /**
@@ -63,7 +66,7 @@ class RecordService
     public function handleFollow()
     {
         if (!$this->event instanceof FollowEvent) {
-            throw new Exception(buildLogMsg('變數型態錯誤', print_r($this->event, true)));
+            throw new CustomException(buildLogMsg('變數型態錯誤', writeJson($this->event)));
         }
 
         if (!$this->record) {
@@ -79,13 +82,11 @@ class RecordService
     public function handlePostback()
     {
         if (!$this->event instanceof PostbackEvent) {
-            throw new Exception(buildLogMsg('變數型態錯誤', print_r($this->event, true)));
+            throw new CustomException(buildLogMsg('變數型態錯誤', writeJson(objToArr($this->event))));
         }
 
-        Log::info(buildLogMsg('handlePostback()', $this->event->getPostbackData()));
-
-        $data       = explode('|', $this->event->getPostbackData());
-        $searchType = $data[0];
+        $musicData  = explode('|', $this->event->getPostbackData());
+        $searchType = $musicData[0];
 
         // 重複點選相同的搜尋範圍
         if ($this->record->type === $searchType) {
@@ -95,25 +96,25 @@ class RecordService
         // 變更搜尋範圍
         if (isset($this->searchTypes[$searchType])) {
             $this->recordRepo->update($this->record, ['type' => $searchType]);
-            return $this->messageService->createText('已將搜尋範圍變更至 [ ' . $this->searchTypes[$searchType] . ' ]');
+            exit;
         }
 
         // 點選 flex message 元件
         switch ($searchType) {
             case 'find_album': // 顯示歌手專輯
-                $albums = $this->musicService->getAlbums($data[1]);
+                $albums = $this->musicService->getAlbums($musicData[1]);
                 return $albums ? $this->messageService->createAlbumFlex($albums) : $this->notFoundMsg;
 
             case 'find_track': // 顯示專輯歌曲
-                $tracks = $this->musicService->getTracks($data[1]);
-                return $tracks ? $this->messageService->createFindTrackFlex($data, $tracks) : $this->notFoundMsg;
+                $tracks = $this->musicService->getTracks($musicData[1]);
+                return $tracks ? $this->messageService->createFindTrackFlex($musicData, $tracks) : $this->notFoundMsg;
 
             case 'preview': // 試聽
-                $musicUrl = saveMusic($data[1], $data[2]);
+                $musicUrl = saveMusic($musicData[1], $musicData[2]);
                 return $this->messageService->createAudio($musicUrl);
         }
 
-        throw new Exception(buildLogMsg('訊息建立失敗', print_r($this->event, true)));
+        throw new CustomException(buildLogMsg('訊息建立失敗', writeJson(objToArr($this->event))));
     }
 
     /**
@@ -124,7 +125,7 @@ class RecordService
     public function handleMessage()
     {
         if (!$this->event instanceof MessageEvent) {
-            throw new Exception(buildLogMsg('變數型態錯誤', print_r($this->event, true)));
+            throw new CustomException(buildLogMsg('變數型態錯誤', writeJson(objToArr($this->event))));
         }
 
         if (!$this->record->type) {

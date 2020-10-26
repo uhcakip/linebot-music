@@ -1,6 +1,7 @@
 <?php
 
 use GuzzleHttp\Client;
+use Illuminate\Support\Facades\Storage;
 
 if (!function_exists('writeJson')) {
     /**
@@ -26,6 +27,20 @@ if (!function_exists('buildLogMsg')) {
     function buildLogMsg(string $msg, string $data = '')
     {
         return $data ? "[ $msg ]: $data" : "[ $msg ]";
+    }
+}
+
+if (!function_exists('ObjToArr')) {
+    function objToArr(object $obj)
+    {
+        $obj = (array)$obj;
+        $arr = [];
+
+        foreach ($obj as $k => $v) {
+            $arr[] = $v;
+        }
+
+        return $arr;
     }
 }
 
