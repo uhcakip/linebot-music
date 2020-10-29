@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Exceptions\CustomException;
 use App\Repos\RecordRepo;
-use Exception;
 use Illuminate\Support\Facades\Log;
 use LINE\LINEBot\Event\BaseEvent;
 use LINE\LINEBot\Event\FollowEvent;
@@ -20,7 +19,6 @@ class RecordService
 
     protected $event;
     protected $record;
-    protected $searchTypes;
     protected $notFoundMsg;
 
     public function __construct(RecordRepo $recordRepo, MessageService $messageService, MusicService $musicService)
@@ -30,16 +28,14 @@ class RecordService
         $this->messageService = $messageService;
         $this->musicService   = $musicService;
 
-        $this->searchTypes = config('bot.type');
         $this->notFoundMsg = $this->messageService->createText('找不到相關的音樂資訊');
     }
 
     /**
-     * 接收 Event 物件，傳給對應的處理 function
+     * 接收 event 物件，傳給對應的處理 function
      *
      * @param BaseEvent $event
      * @return mixed
-     * @throws CustomException
      */
     public function handle(BaseEvent $event)
     {
@@ -47,7 +43,8 @@ class RecordService
         $eventType   = $event->getType();
 
         if (!in_array($eventType, $handleTypes)) {
-            throw new CustomException(buildLogMsg('不需處理的事件類別', writeJson(objToArr($event))));
+            //throw new CustomException(buildLogMsg('不需處理的事件類別', writeJson(objToArr($event))));
+            exit;
         }
 
         $this->event  = $event;
@@ -61,7 +58,7 @@ class RecordService
     /**
      * 處理 follow 事件
      *
-     * @throws Exception
+     * @throws CustomException
      */
     public function handleFollow()
     {
@@ -70,14 +67,16 @@ class RecordService
         }
 
         if (!$this->record) {
-            $this->recordRepo->create(['user' => $this->event->getUserId()]);
+            // 預設搜尋範圍為歌曲
+            $this->recordRepo->create(['user' => $this->event->getUserId(), 'type' => 'track']);
         }
     }
 
     /**
      * 處理 postback 事件
      *
-     * @throws Exception
+     * @return \LINE\LINEBot\MessageBuilder\AudioMessageBuilder|\LINE\LINEBot\MessageBuilder\FlexMessageBuilder|\LINE\LINEBot\MessageBuilder\TextMessageBuilder
+     * @throws CustomException
      */
     public function handlePostback()
     {
@@ -85,32 +84,33 @@ class RecordService
             throw new CustomException(buildLogMsg('變數型態錯誤', writeJson(objToArr($this->event))));
         }
 
-        $musicData  = explode('|', $this->event->getPostbackData());
-        $searchType = $musicData[0];
+        $postbackData = json_decode($this->event->getPostbackData(), true);
+        $searchType   = $postbackData['type'];
 
-        // 重複點選相同的搜尋範圍
-        if ($this->record->type === $searchType) {
-            exit;
-        }
-
-        // 變更搜尋範圍
-        if (isset($this->searchTypes[$searchType])) {
-            $this->recordRepo->update($this->record, ['type' => $searchType]);
+        // 點選 rich menu 變更搜尋範圍
+        if (isset(RichMenuService::SEARCH_TYPES[$searchType])) {
+            if ($this->record->type !== $searchType) {
+                $this->recordRepo->update($this->record, ['type' => $searchType]);
+            }
             exit;
         }
 
         // 點選 flex message 元件
         switch ($searchType) {
-            case 'find_album': // 顯示歌手專輯
-                $albums = $this->musicService->getAlbums($musicData[1]);
-                return $albums ? $this->messageService->createAlbumFlex($albums) : $this->notFoundMsg;
+            case 'findAlbum': // 顯示歌手專輯
+                $albums = $this->musicService->getAlbums($postbackData['artistId']);
+                return $albums
+                     ? $this->messageService->createAlbumFlex($albums)
+                     : $this->notFoundMsg;
 
-            case 'find_track': // 顯示專輯歌曲
-                $tracks = $this->musicService->getTracks($musicData[1]);
-                return $tracks ? $this->messageService->createFindTrackFlex($musicData, $tracks) : $this->notFoundMsg;
+            case 'findTrack': // 顯示專輯歌曲
+                $tracks = $this->musicService->getTracks($postbackData['albumId']);
+                return $tracks
+                     ? $this->messageService->createFindTrackFlex($postbackData, $tracks)
+                     : $this->notFoundMsg;
 
             case 'preview': // 試聽
-                $musicUrl = saveMusic($musicData[1], $musicData[2]);
+                $musicUrl = saveMusic($postbackData['trackId'], $postbackData['previewUrl']);
                 return $this->messageService->createAudio($musicUrl);
         }
 
@@ -120,16 +120,13 @@ class RecordService
     /**
      * 處理 message 事件
      *
-     * @throws Exception
+     * @return \LINE\LINEBot\MessageBuilder\TextMessageBuilder|\LINE\LINEBot\MessageBuilder\FlexMessageBuilder
+     * @throws CustomException
      */
     public function handleMessage()
     {
         if (!$this->event instanceof MessageEvent) {
             throw new CustomException(buildLogMsg('變數型態錯誤', writeJson(objToArr($this->event))));
-        }
-
-        if (!$this->record->type) {
-            return $this->messageService->createText('請先點選搜尋範圍');
         }
 
         if (!$this->event instanceof TextMessage) {

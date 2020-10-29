@@ -13,6 +13,8 @@ use LINE\LINEBot\TemplateActionBuilder\UriTemplateActionBuilder;
 
 class ComponentService
 {
+    const MAIN_COLOR = '#ffffff';
+    
     /**
      * 建立文字元件 ( lg )
      *
@@ -23,7 +25,7 @@ class ComponentService
     {
         $text = new TextComponentBuilder($name);
         $text->setSize('lg')
-             ->setColor(config('bot.main_color'))
+             ->setColor(self::MAIN_COLOR)
              ->setWeight('bold');
 
         $box = new BoxComponentBuilder('vertical', [$text]);
@@ -54,21 +56,21 @@ class ComponentService
      * 建立歌手、專輯按鈕元件
      *
      * @param string $hint
-     * @param string $data
+     * @param string $postbackData
      * @return BoxComponentBuilder
      */
-    public function createBtn(string $hint, string $data)
+    public function createBtn(string $hint, string $postbackData)
     {
         $text = new TextComponentBuilder($hint);
-        $text->setColor(config('bot.main_color'))
+        $text->setColor(self::MAIN_COLOR)
              ->setAlign('center')
              ->setOffsetTop('7.5px');
 
-        $pba = new PostbackTemplateActionBuilder('btn', $data);
+        $pba = new PostbackTemplateActionBuilder('btn', $postbackData);
         $box = new BoxComponentBuilder('vertical', [$text], null, 'sm', 'xxl', $pba);
         $box->setHeight('40px')
             ->setBorderWidth('1px')
-            ->setBorderColor(config('bot.main_color'))
+            ->setBorderColor(self::MAIN_COLOR)
             ->setCornerRadius('4px')
             ->setOffsetTop('7px');
 
@@ -78,28 +80,36 @@ class ComponentService
     /**
      * 建立歌曲按鈕元件
      *
-     * @param string $data
+     * @param array $postbackData
      * @return BoxComponentBuilder
      */
-    public function createTrackBtn(string $data)
+    public function createTrackBtn(array $postbackData)
     {
         $boxes   = [];
-        $hints   = ['試聽', '前往下載'];
-        $actions = [new PostbackTemplateActionBuilder('btn', $data), new UriTemplateActionBuilder('url', preg_replace('/preview\|[^|]+\|/', '', $data))];
+        $actions = [
+            [
+                'actionType' => new PostbackTemplateActionBuilder('btn', writeJson($postbackData)),
+                'text'       => '試聽'
+            ],
+            [
+                'actionType' => new UriTemplateActionBuilder('url', $postbackData['previewUrl']),
+                'text'       => '前往下載'
+            ]
+        ];
 
-        for ($i = 0; $i < count($hints); $i++) {
-            $text = new TextComponentBuilder($hints[$i]);
-            $text->setColor(config('bot.main_color'))
+        foreach ($actions as $k => $action) {
+            $text = new TextComponentBuilder($action['text']);
+            $text->setColor(self::MAIN_COLOR)
                  ->setPosition('absolute')
                  ->setAlign('center')
                  ->setOffsetTop('7.5px')
                  ->setOffsetStart('25%')
                  ->setOffsetEnd('25%');
 
-            $box = new BoxComponentBuilder('vertical', [$text], $i + 1, 'sm', 'lg', $actions[$i]);
+            $box = new BoxComponentBuilder('vertical', [$text], $k + 1, 'sm', 'lg', $action['actionType']);
             $box->setHeight('40px')
                 ->setBorderWidth('1px')
-                ->setBorderColor(config('bot.main_color'))
+                ->setBorderColor(self::MAIN_COLOR)
                 ->setCornerRadius('4px')
                 ->setOffsetStart('-10px');
 
@@ -108,7 +118,7 @@ class ComponentService
 
         $boxWrap = new BoxComponentBuilder('horizontal', $boxes, null, 'sm', 'xxl');
         $boxWrap->setHeight('40px')
-                ->setBorderColor(config('bot.main_color'))
+                ->setBorderColor(self::MAIN_COLOR)
                 ->setCornerRadius('4px');
 
         return $boxWrap;

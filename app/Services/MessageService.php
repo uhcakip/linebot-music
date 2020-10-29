@@ -39,11 +39,17 @@ class MessageService
         $bubbles = [];
 
         foreach ($tracks as $track) {
+            $postbackData = [
+                'type'       => 'preview',
+                'trackId'    => $track->id,
+                'previewUrl' => getPreviewUrl($track->url)
+            ];
+
             // 順序需為 lg ( 歌名 ) -> sm ( 歌手名 ) -> btn ( 按鈕 )
             $musicBoxes = [
                 $this->componentService->createLgText($track->name),
                 $this->componentService->createSmText($track->album->artist->name),
-                $this->componentService->createTrackBtn('preview|' . $track->id . '|' . getPreviewUrl($track->url))
+                $this->componentService->createTrackBtn($postbackData)
             ];
 
             // 順序需為 img ( 專輯圖片 ) -> music ( 音樂資訊 + 按鈕 )
@@ -57,7 +63,6 @@ class MessageService
         }
 
         $carousel = $this->componentService->createCarousel($bubbles);
-        //Log::info('Track carousel: ' . print_r($carousel, true));
 
         return new FlexMessageBuilder('查詢結果', $carousel);
     }
@@ -65,25 +70,31 @@ class MessageService
     /**
      * 建立歌曲 flex message ( 顯示專輯歌曲 )
      *
-     * @param array $data
+     * @param array $musicData
      * @param array $tracks
      * @return FlexMessageBuilder
      */
-    public function createFindTrackFlex(array $data, array $tracks)
+    public function createFindTrackFlex(array $musicData, array $tracks)
     {
         $bubbles = [];
 
         foreach ($tracks as $track) {
+            $postbackData = [
+                'type'       => 'preview',
+                'trackId'    => $track->id,
+                'previewUrl' => getPreviewUrl($track->url)
+            ];
+
             // 順序需為 lg ( 歌名 ) -> sm ( 歌手名 ) -> btn ( 按鈕 )
             $musicBoxes = [
                 $this->componentService->createLgText($track->name),
-                $this->componentService->createSmText($data[2]),
-                $this->componentService->createTrackBtn('preview|' . $track->id . '|' . getPreviewUrl($track->url))
+                $this->componentService->createSmText($musicData['artistName']),
+                $this->componentService->createTrackBtn($postbackData)
             ];
 
             // 順序需為 img ( 專輯圖片 ) -> music ( 音樂資訊 + 按鈕 )
             $bodyBoxes = [
-                $this->componentService->createImg($data[3]),
+                $this->componentService->createImg($musicData['albumImg']),
                 $this->componentService->createMusic($musicBoxes)
             ];
 
@@ -92,8 +103,6 @@ class MessageService
         }
 
         $carousel = $this->componentService->createCarousel($bubbles);
-        //Log::info('Find track carousel: ' . print_r($carousel, true));
-
         return new FlexMessageBuilder('查詢結果', $carousel);
     }
 
@@ -108,10 +117,15 @@ class MessageService
         $bubbles = [];
 
         foreach ($artists as $artist) {
+            $postbackData = writeJson([
+                'type'     => 'findAlbum',
+                'artistId' => $artist->id
+            ]);
+
             // 順序需為 lg ( 歌手名 ) -> btn ( 按鈕 )
             $musicBoxes = [
                 $this->componentService->createLgText($artist->name),
-                $this->componentService->createBtn('顯示歌手專輯', 'find_album|' . $artist->id)
+                $this->componentService->createBtn('顯示歌手專輯', $postbackData)
             ];
 
             // 順序需為 img ( 歌手圖片 ) -> music ( 音樂資訊 + 按鈕 )
@@ -125,8 +139,6 @@ class MessageService
         }
 
         $carousel = $this->componentService->createCarousel($bubbles);
-        //Log::info('Artist carousel: ' . print_r($carousel, true));
-
         return new FlexMessageBuilder('查詢結果', $carousel);
     }
 
@@ -141,11 +153,18 @@ class MessageService
         $bubbles = [];
 
         foreach ($albums as $album) {
+            $postbackData = writeJson([
+                'type'       => 'findTrack',
+                'albumId'    => $album->id,
+                'artistName' => $album->artist->name,
+                'albumImg'   => $album->images[1]->url
+            ]);
+
             // 順序需為 lg ( 專輯名 ) -> sm ( 歌手名 ) -> btn ( 按鈕 )
             $musicBoxes = [
                 $this->componentService->createLgText($album->name),
                 $this->componentService->createSmText($album->artist->name),
-                $this->componentService->createBtn('顯示專輯歌曲', 'find_track|' . $album->id . '|' . $album->artist->name . '|' . $album->images[1]->url)
+                $this->componentService->createBtn('顯示專輯歌曲', $postbackData)
             ];
 
             // 順序需為 img ( 專輯圖片 ) -> music ( 音樂資訊 + 按鈕 )
@@ -159,8 +178,6 @@ class MessageService
         }
 
         $carousel = $this->componentService->createCarousel($bubbles);
-        //Log::info('Album carousel: ' . print_r($carousel, true));
-
         return new FlexMessageBuilder('查詢結果', $carousel);
     }
 

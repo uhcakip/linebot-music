@@ -73,7 +73,7 @@ if (!function_exists('getPreviewUrl')) {
         $client = new Client();
         $html   = $client->get($pageUrl)->getBody()->getContents();
 
-        preg_match('/<meta property="music:preview_url:url" content="(.+)"/', $html, $matches);
+        preg_match('/<meta property="music:preview_url:secure_url" content="(.+)"/', $html, $matches);
 
         return $matches[1];
     }

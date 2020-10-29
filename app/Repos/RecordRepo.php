@@ -28,7 +28,7 @@ class RecordRepo
         $record = new Record();
 
         $record->user = Arr::get($args, 'user');
-        $record->type = Arr::get($args, 'type', 'track');
+        $record->type = Arr::get($args, 'type');
         // $record->status = Arr::get($args, 'status');
 
         return $record->save();
