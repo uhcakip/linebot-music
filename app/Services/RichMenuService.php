@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Exceptions\CustomException;
 use Illuminate\Support\Facades\Log;
 use LINE\LINEBot;
 use LINE\LINEBot\HTTPClient\CurlHTTPClient;
@@ -16,6 +17,10 @@ class RichMenuService
     protected $httpClient;
     protected $lineBot;
 
+    const WIDTH        = 2500;
+    const HEIGHT       = 843;
+    const SEARCH_TYPES = ['artist' => '歌手', 'track' => '歌曲', 'album' => '專輯'];
+
     public function __construct()
     {
         $this->httpClient = new CurlHTTPClient(config('bot.line_token'));
@@ -27,21 +32,16 @@ class RichMenuService
      */
     public function create()
     {
-        $areas  = [];
-        $size   = new RichMenuSizeBuilder(843, 2500);
-        $bounds = [
-            new RichMenuAreaBoundsBuilder(0, 0, 833, 843),
-            new RichMenuAreaBoundsBuilder(833, 0, 833, 843),
-            new RichMenuAreaBoundsBuilder(1666, 0, 833, 843),
-        ];
-        $actions = [
-            new PostbackTemplateActionBuilder('artist', 'artist', '請輸入歌手名'),
-            new PostbackTemplateActionBuilder('track', 'track', '請輸入歌曲名'),
-            new PostbackTemplateActionBuilder('album', 'album', '請輸入專輯名'),
-        ];
+        $size    = new RichMenuSizeBuilder(self::HEIGHT, self::WIDTH);
+        $width   = intval(self::WIDTH / count(self::SEARCH_TYPES)); // 以寬度為基準分成三個區塊
+        $xOffset = 0;
+        $areas   = [];
 
-        for ($i = 0; $i < count($bounds); $i++) {
-            $areas[] = new RichMenuAreaBuilder($bounds[$i], $actions[$i]);
+        foreach (self::SEARCH_TYPES as $k => $v) {
+            $bound   = new RichMenuAreaBoundsBuilder($xOffset, 0, $width, self::HEIGHT);
+            $action  = new PostbackTemplateActionBuilder($k, writeJson(['type' => $k]), '請輸入' . $v . '名');
+            $areas[] = new RichMenuAreaBuilder($bound, $action);
+            $xOffset += $width;
         }
 
         $richMenu   = new RichMenuBuilder($size, true, 'linebot-music', '選擇搜尋範圍', $areas);
@@ -53,11 +53,25 @@ class RichMenuService
     }
 
     /**
+     * 刪除全部 rich menu
+     */
+    public function delete()
+    {
+        $menus = $this->lineBot->getRichMenuList()->getJSONDecodedBody();
+        $menus = $menus['richmenus'];
+
+        foreach ($menus as $menu) {
+            $this->lineBot->deleteRichMenu($menu['richMenuId']);
+        }
+    }
+
+    /**
      * 綁定特定 rich menu 到特定 user
      *
      * @param string $userId
      * @param string $richMenuName
      */
+    /*
     public function link(string $userId, string $richMenuName)
     {
         $menus = $this->lineBot->getRichMenuList()->getJSONDecodedBody();
@@ -71,45 +85,17 @@ class RichMenuService
             }
         }
     }
+    */
 
     /**
      * 取消 rich menu 和 user 的綁定
      *
      * @param string $userId
      */
+    /*
     public function unlink(string $userId)
     {
         $this->lineBot->unlinkRichMenu($userId);
     }
-
-    /**
-     * 刪除單一 rich menu
-     *
-     * @param string $richMenuName
-     */
-    public function delete(string $richMenuName)
-    {
-        $menus = $this->lineBot->getRichMenuList()->getJSONDecodedBody();
-        $menus = $menus['richmenus'];
-
-        foreach ($menus as $menu) {
-            if ($menu['name'] === $richMenuName) {
-                $this->lineBot->deleteRichMenu($richMenuName);
-                break;
-            }
-        }
-    }
-
-    /**
-     * 刪除全部 rich menu
-     */
-    public function deleteAll()
-    {
-        $menus = $this->lineBot->getRichMenuList()->getJSONDecodedBody();
-        $menus = $menus['richmenus'];
-
-        foreach ($menus as $menu) {
-            $this->lineBot->deleteRichMenu($menu['richMenuId']);
-        }
-    }
+    */
 }

@@ -43,20 +43,16 @@ class RichMenuManage extends Command
      */
     public function handle()
     {
-        switch ($this->argument('action')) {
-            case 'create':
-                $this->richMenuService->create();
-                break;
-            case 'delete':
-                $all = $this->choice('Delete all ?', ['Y', 'N']);
+        $handleActions = ['create', 'delete'];
+        $action        = $this->argument('action');
 
-                if ($all === 'Y') {
-                    $this->richMenuService->deleteAll();
-                } else {
-                    $this->richMenuService->delete('');
-                }
+        if (!in_array($action, $handleActions)) {
+            $this->error('參數錯誤');
+            exit;
         }
 
+        // call 對應 function
+        $this->richMenuService->$action();
         $this->info('執行完成');
     }
 }
