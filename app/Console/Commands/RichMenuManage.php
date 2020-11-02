@@ -2,29 +2,21 @@
 
 namespace App\Console\Commands;
 
+use App\Exceptions\CustomException;
 use App\Services\RichMenuService;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class RichMenuManage extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
     protected $signature = 'linebot:richmenu {action}';
-
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
     protected $description = '管理 Linebot Rich Menu';
 
     protected $richMenuService;
 
     /**
-     * Create a new command instance.
+     * RichMenuManage constructor.
      *
      * @param RichMenuService $richMenuService
      */
@@ -43,16 +35,24 @@ class RichMenuManage extends Command
      */
     public function handle()
     {
-        $handleActions = ['create', 'delete'];
-        $action        = $this->argument('action');
+        try {
+            switch ($this->argument('action')) {
+                case 'create':
+                    $this->richMenuService->create();
+                    break;
 
-        if (!in_array($action, $handleActions)) {
-            $this->error('參數錯誤');
-            exit;
+                case 'delete':
+                    $this->richMenuService->delete();
+                    break;
+
+                default:
+                    $this->error('參數錯誤');
+                    exit;
+            }
+
+        } catch (Throwable $t) {
+            Log::error($t);
+            $this->error($t instanceof CustomException ? $t->getMessage() : '執行失敗');
         }
-
-        // call 對應 function
-        $this->richMenuService->$action();
-        $this->info('執行完成');
     }
 }

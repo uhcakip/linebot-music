@@ -56,17 +56,17 @@ class ComponentService
      * 建立歌手、專輯按鈕元件
      *
      * @param string $hint
-     * @param string $postbackData
+     * @param array $postbackData
      * @return BoxComponentBuilder
      */
-    public function createBtn(string $hint, string $postbackData)
+    public function createBtn(string $hint, array $postbackData)
     {
         $text = new TextComponentBuilder($hint);
         $text->setColor(self::MAIN_COLOR)
              ->setAlign('center')
              ->setOffsetTop('7.5px');
 
-        $pba = new PostbackTemplateActionBuilder('btn', $postbackData);
+        $pba = new PostbackTemplateActionBuilder('btn', writeJson($postbackData));
         $box = new BoxComponentBuilder('vertical', [$text], null, 'sm', 'xxl', $pba);
         $box->setHeight('40px')
             ->setBorderWidth('1px')
@@ -85,15 +85,15 @@ class ComponentService
      */
     public function createTrackBtn(array $postbackData)
     {
-        $boxes   = [];
+        $boxes = [];
         $actions = [
-            [
-                'actionType' => new PostbackTemplateActionBuilder('btn', writeJson($postbackData)),
-                'text'       => '試聽'
-            ],
             [
                 'actionType' => new UriTemplateActionBuilder('url', $postbackData['previewUrl']),
                 'text'       => '前往下載'
+            ],
+            [
+                'actionType' => new PostbackTemplateActionBuilder('btn', writeJson($postbackData)),
+                'text'       => '試聽'
             ]
         ];
 

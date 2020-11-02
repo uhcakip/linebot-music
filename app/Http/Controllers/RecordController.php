@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Exceptions\CustomException;
-use App\Services\RecordService;
+use App\Services\EventService;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -14,34 +14,50 @@ use LINE\LINEBot\HTTPClient\CurlHTTPClient;
 
 class RecordController extends Controller
 {
-    protected $recordService;
+    protected $eventService;
 
     protected $httpClient;
     protected $lineBot;
 
-    public function __construct(RecordService $recordService)
+    public function __construct(EventService $eventService)
     {
         // 注入
-        $this->recordService = $recordService;
+        $this->eventService = $eventService;
 
         $this->httpClient = new CurlHTTPClient(config('bot.line_token'));
-        $this->lineBot    = new LINEBot($this->httpClient, ['channelSecret' => config('bot.line_secret')]);
+        $this->lineBot = new LINEBot($this->httpClient, ['channelSecret' => config('bot.line_secret')]);
     }
 
     public function handle(Request $request)
     {
         try {
-            $event = $this->lineBot->parseEventRequest( // 回傳對應的 event 物件 ( array )
-                $request->getContent(),
-                $request->header(HTTPHeader::LINE_SIGNATURE)
-            );
+            $body = $request->getContent();
+            $header = $request->header(HTTPHeader::LINE_SIGNATURE);
+            $event = Arr::first($this->lineBot->parseEventRequest($body, $header));
+            $replyed = false;
 
-            $event    = Arr::first($event);
-            $replyMsg = $this->recordService->handle($event);
-            $response = $this->lineBot->replyMessage($event->getReplyToken(), $replyMsg);
+            switch ($event->getType()) {
+                case 'postback':
+                    $replyMsg = $this->eventService->handlePostbackEvent($event);
+                    $replyed = $this->lineBot->replyMessage($event->getReplyToken(), $replyMsg);
+                    break;
 
-            if (!$response->isSucceeded()) {
-                throw new CustomException($response->getRawBody());
+                case 'message':
+                    $replyMsg = $this->eventService->handleMessageEvent($event);
+                    $replyed = $this->lineBot->replyMessage($event->getReplyToken(), $replyMsg);
+                    break;
+
+                case 'follow':
+                    $this->eventService->handleFollowEvent($event);
+                    break;
+
+                default:
+                    //throw new CustomException(buildLogMsg('不需處理的事件類別', writeJson(objToArr($event))));
+                    exit;
+            }
+
+            if ($replyed && !$replyed->isSucceeded()) {
+                throw new CustomException(buildLogMsg('建立訊息失敗', $replyed->getRawBody()));
             }
 
         } catch (Exception $e) {

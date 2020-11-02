@@ -31,6 +31,12 @@ if (!function_exists('buildLogMsg')) {
 }
 
 if (!function_exists('ObjToArr')) {
+    /**
+     * 物件轉陣列
+     *
+     * @param object $obj
+     * @return array
+     */
     function objToArr(object $obj)
     {
         $obj = (array)$obj;

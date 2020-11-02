@@ -24,19 +24,14 @@ class MusicService
      * @param string $keyword
      * @return mixed
      */
-    public function getResult(string $type, string $keyword)
+    public function searchByKeyword(string $type, string $keyword)
     {
-        $response  = $this->kkbox->search($keyword, [$type], Territory::Taiwan, 0, 30);
-        $attribute = $type . 's';
+        $response = $this->kkbox->search($keyword, [$type], Territory::Taiwan, 0, 20);
+        $response = json_decode($response->getBody(), true);
+        $type .= 's';
 
-        $results = json_decode($response->getBody())->$attribute->data;
-        $results = collect($results)->filter(function ($result) { // 地區必須包含 TW 才有權限取得音樂資訊
-            return isset($result->available_territories) ? in_array('TW', $result->available_territories) : $result;
-        });
-
-        //Log::info(ucfirst($type) . ' search result: ' . writeJson($results->all()));
-
-        return $results->take($results->count() < 5 ? $results->count() : 5)->all();
+        //Log::info(buildLogMsg('關鍵字搜尋 ' . $type, print_r($response, true)));
+        return $response[$type]['data'];
     }
 
     /**
@@ -67,7 +62,9 @@ class MusicService
     public function getTracks(string $albumId)
     {
         $response = $this->kkbox->fetchTracksInAlbum($albumId);
-        $result   = json_decode($response->getBody())->data;
+        $result = json_decode($response->getBody())->data;
+
+        Log::info(buildLogMsg('專輯 ID', writeJson($result)));
 
         // 隨機取 5 首歌
         return Arr::random($result, (count($result) < 5 ? count($result) : 5));

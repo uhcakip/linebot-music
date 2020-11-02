@@ -17,14 +17,14 @@ class RichMenuService
     protected $httpClient;
     protected $lineBot;
 
-    const WIDTH        = 2500;
-    const HEIGHT       = 843;
-    const SEARCH_TYPES = ['artist' => '歌手', 'track' => '歌曲', 'album' => '專輯'];
+    const WIDTH = 2500;
+    const HEIGHT = 843;
+    const TYPES = ['artist' => '歌手', 'track'  => '歌曲', 'album'  => '專輯'];
 
     public function __construct()
     {
         $this->httpClient = new CurlHTTPClient(config('bot.line_token'));
-        $this->lineBot    = new LINEBot($this->httpClient, ['channelSecret' => config('bot.line_secret')]);
+        $this->lineBot = new LINEBot($this->httpClient, ['channelSecret' => config('bot.line_secret')]);
     }
 
     /**
@@ -32,24 +32,29 @@ class RichMenuService
      */
     public function create()
     {
-        $size    = new RichMenuSizeBuilder(self::HEIGHT, self::WIDTH);
-        $width   = intval(self::WIDTH / count(self::SEARCH_TYPES)); // 以寬度為基準分成三個區塊
+        $size = new RichMenuSizeBuilder(self::HEIGHT, self::WIDTH);
+        $width = intval(self::WIDTH / count(self::TYPES)); // 以寬度為基準分成三個區塊
         $xOffset = 0;
-        $areas   = [];
+        $areas = [];
 
-        foreach (self::SEARCH_TYPES as $k => $v) {
-            $bound   = new RichMenuAreaBoundsBuilder($xOffset, 0, $width, self::HEIGHT);
-            $action  = new PostbackTemplateActionBuilder($k, writeJson(['type' => $k]), '請輸入' . $v . '名');
+        foreach (self::TYPES as $typeEn => $typeCh) {
+            $text = '已將搜尋範圍變更至' . $typeCh;
+            $postbackData = writeJson(['area' => 'richMenu', 'type' => $typeEn]);
+
+            $bound = new RichMenuAreaBoundsBuilder($xOffset, 0, $width, self::HEIGHT);
+            $action = new PostbackTemplateActionBuilder($typeEn, $postbackData, $text);
             $areas[] = new RichMenuAreaBuilder($bound, $action);
+
             $xOffset += $width;
         }
 
-        $richMenu   = new RichMenuBuilder($size, true, 'linebot-music', '選擇搜尋範圍', $areas);
-        $response   = $this->lineBot->createRichMenu($richMenu)->getJSONDecodedBody(); // create 完會回傳一組 richMenuId
+        $richMenu = new RichMenuBuilder($size, true, 'linebot-music', '變更搜尋範圍', $areas);
+        $response = $this->lineBot->createRichMenu($richMenu)->getJSONDecodedBody(); // create 完會回傳一組 richMenuId
         $richMenuId = $response['richMenuId'];
 
         $this->lineBot->uploadRichMenuImage($richMenuId, 'public/rich_menu_img/line-rich-menu.png', 'image/png');
         $this->lineBot->setDefaultRichMenuId($richMenuId); // 設為預設 rich menu ( 每個 user 的聊天介面都會顯示 )
+        return true;
     }
 
     /**
@@ -63,17 +68,14 @@ class RichMenuService
         foreach ($menus as $menu) {
             $this->lineBot->deleteRichMenu($menu['richMenuId']);
         }
+
+        return true;
     }
 
-    /**
-     * 綁定特定 rich menu 到特定 user
-     *
-     * @param string $userId
-     * @param string $richMenuName
-     */
     /*
     public function link(string $userId, string $richMenuName)
     {
+        // 綁定特定 rich menu 到特定 user
         $menus = $this->lineBot->getRichMenuList()->getJSONDecodedBody();
         $menus = $menus['richmenus'];
 
@@ -87,14 +89,10 @@ class RichMenuService
     }
     */
 
-    /**
-     * 取消 rich menu 和 user 的綁定
-     *
-     * @param string $userId
-     */
     /*
     public function unlink(string $userId)
     {
+        // 取消 rich menu 和 user 的綁定
         $this->lineBot->unlinkRichMenu($userId);
     }
     */
