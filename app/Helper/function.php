@@ -85,27 +85,22 @@ if (!function_exists('getPreviewUrl')) {
     }
 }
 
-if (!function_exists('saveMusic')) {
+if (!function_exists('storeTrack')) {
     /**
-     * 儲存、回傳試聽音檔路徑
+     * 儲存 + 回傳試聽音檔路徑
      *
      * @param string $trackId
      * @param string $previewUrl
      * @return string
      */
-    function saveMusic(string $trackId, string $previewUrl)
+    function storeTrack(string $trackId, string $previewUrl)
     {
-        $dir  = 'music';
-        $path = $dir . '/' . $trackId . '.mp3';
+        $storePath = $trackId . '.mp3';
 
-        if (!file_exists($dir)) {
-            mkdir($dir);
+        if (Storage::disk('tracks')->missing($storePath)) {
+            Storage::disk('tracks')->put($storePath, file_get_contents($previewUrl));
         }
 
-        if (!file_exists($path)) {
-            file_put_contents(public_path($path), file_get_contents($previewUrl));
-        }
-
-        return asset($path);
+        return asset('tracks/' . $storePath);
     }
 }

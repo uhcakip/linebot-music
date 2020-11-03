@@ -114,7 +114,7 @@ class EventService
                     return $tracks ? $this->messageService->createTrackFlexMessage($tracks, $data) : $notFoundMsg;
 
                 case 'preview': // 試聽
-                    $musicUrl = saveMusic($data['trackId'], $data['previewUrl']);
+                    $musicUrl = storeTrack($data['trackId'], $data['previewUrl']);
                     return $this->messageService->createAudioMessage($musicUrl);
             }
         }
