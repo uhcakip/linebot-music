@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use Illuminate\Support\Facades\Log;
 use LINE\LINEBot\MessageBuilder\AudioMessageBuilder;
 use LINE\LINEBot\MessageBuilder\FlexMessageBuilder;
 use LINE\LINEBot\MessageBuilder\TextMessageBuilder;
@@ -23,7 +22,7 @@ class MessageService
      * @param string $text
      * @return TextMessageBuilder
      */
-    public function createText(string $text)
+    public function createTextMessage(string $text)
     {
         return new TextMessageBuilder($text);
     }
@@ -31,28 +30,75 @@ class MessageService
     /**
      * 建立歌曲 flex message
      *
-     * @param array $tracksInAlbum
      * @param array $tracks
+     * @param array $albumInfo
      * @return FlexMessageBuilder
      */
-    public function createTrackFlex(array $tracks, array $tracksInAlbum = [])
+    public function createTrackFlexMessage(array $tracks, array $albumInfo = [])
     {
         $bubbles = [];
 
-        foreach ($tracks as $track) {
-            $musicBoxes = [
-                $this->componentService->createLgText($track['trackName']), // 歌名
-                $this->componentService->createSmText($track['artistName']), // 歌手名
-                $this->componentService->createTrackBtn($track['postbackData'])
-            ];
+        if (!$albumInfo) { // 關鍵字搜尋歌曲
+            foreach ($tracks as $track) {
+                $albumImg    = $track['album']['images'][1]['url'] ?? '';
+                $territories = $track['available_territories'] ?? [];
 
-            $bodyBoxes = [
-                $this->componentService->createImg($track['albumImg']), // 專輯圖片
-                $this->componentService->createMusic($musicBoxes)
-            ];
+                if (count($bubbles) >= 5) { // 只需要 5 組
+                    break;
+                }
+                if (!$albumImg || !$territories || !in_array('TW', $territories)) { // 找不到符合尺寸的圖片或權限不包含 tw 就跳過
+                    continue;
+                }
 
-            $body = $this->componentService->createBody($bodyBoxes);
-            $bubbles[] = $this->componentService->createBubble($body);
+                $trackId    = $track['id'];
+                $trackName  = $track['name'];
+                $artistName = $track['album']['artist']['name'];
+                $previewUrl = getPreviewUrl($track['url']);
+                $data       = ['area' => 'flexMessage', 'type' => 'preview'] + compact('trackId', 'previewUrl');
+
+                $musicBoxes = [
+                    $this->componentService->createLgText($trackName), // 歌名
+                    $this->componentService->createSmText($artistName), // 歌手名
+                    $this->componentService->createTrackBtn($data)
+                ];
+                $bodyBoxes  = [
+                    $this->componentService->createImg($albumImg), // 專輯圖片
+                    $this->componentService->createMusic($musicBoxes)
+                ];
+
+                $body      = $this->componentService->createBody($bodyBoxes);
+                $bubbles[] = $this->componentService->createBubble($body);
+            }
+
+        } else { // 專輯歌曲
+            foreach ($tracks as $track) {
+                $territories = $track['available_territories'] ?? [];
+
+                if (count($bubbles) >= 5) { // 只需要 5 組
+                    break;
+                }
+                if (!$territories || !in_array('TW', $territories)) { // 找不到符合尺寸的圖片或權限不包含 tw 就跳過
+                    continue;
+                }
+
+                $trackId    = $track['id'];
+                $trackName  = $track['name'];
+                $previewUrl = getPreviewUrl($track['url']);
+                $data       = ['area' => 'flexMessage', 'type' => 'preview'] + compact('trackId', 'previewUrl');
+
+                $musicBoxes = [
+                    $this->componentService->createLgText($trackName), // 歌名
+                    $this->componentService->createSmText($albumInfo['artistName']), // 歌手名
+                    $this->componentService->createTrackBtn($data)
+                ];
+                $bodyBoxes  = [
+                    $this->componentService->createImg($albumInfo['albumImg']), // 專輯圖片
+                    $this->componentService->createMusic($musicBoxes)
+                ];
+
+                $body      = $this->componentService->createBody($bodyBoxes);
+                $bubbles[] = $this->componentService->createBubble($body);
+            }
         }
 
         $carousel = $this->componentService->createCarousel($bubbles);
@@ -60,67 +106,38 @@ class MessageService
     }
 
     /**
-     * 建立歌曲 flex message ( 顯示專輯歌曲 )
-     *
-     * @param array $musicData
-     * @param array $tracks
-     * @return FlexMessageBuilder
-     */
-    public function createFindTrackFlex(array $musicData, array $tracks)
-    {
-        $bubbles = [];
-
-        foreach ($tracks as $track) {
-            $postbackData = [
-                'area'       => 'flexMessage',
-                'type'       => 'preview',
-                'trackId'    => $track->id,
-                'previewUrl' => getPreviewUrl($track->url)
-            ];
-
-            // 順序需為 lg ( 歌名 ) -> sm ( 歌手名 ) -> btn ( 按鈕 )
-            $musicBoxes = [
-                $this->componentService->createLgText($track->name),
-                $this->componentService->createSmText($musicData['artistName']),
-                $this->componentService->createTrackBtn($postbackData)
-            ];
-
-            // 順序需為 img ( 專輯圖片 ) -> music ( 音樂資訊 + 按鈕 )
-            $bodyBoxes = [
-                $this->componentService->createImg($musicData['albumImg']),
-                $this->componentService->createMusic($musicBoxes)
-            ];
-
-            $body = $this->componentService->createBody($bodyBoxes);
-            $bubbles[] = $this->componentService->createBubble($body);
-        }
-
-        $carousel = $this->componentService->createCarousel($bubbles);
-        return new FlexMessageBuilder('搜尋結果', $carousel);
-    }
-
-    /**
-     * 建立歌手 flex message ( 透過關鍵字搜尋 )
+     * 建立歌手 flex message
      *
      * @param array $artists
      * @return FlexMessageBuilder
      */
-    public function createArtistFlex(array $artists)
+    public function createArtistFlexMessage(array $artists)
     {
         $bubbles = [];
 
         foreach ($artists as $artist) {
-            $musicBoxes = [
-                $this->componentService->createLgText($artist['artistName']), // 歌手名
-                $this->componentService->createBtn('顯示歌手專輯', $artist['postbackData'])
-            ];
+            if (count($bubbles) >= 5) { // 只需要 5 組
+                break;
+            }
+            if (!isset($artist['images'][1]['url'])) { // 找不到符合尺寸的圖片就跳過
+                continue;
+            }
 
-            $bodyBoxes = [
-                $this->componentService->createImg($artist['artistImg']), // 歌手圖片
+            $artistId   = $artist['id'];
+            $artistName = $artist['name'];
+            $artistImg  = $artist['images'][1]['url'];
+            $data       = ['area' => 'flexMessage', 'type' => 'AlbumsOfArtist'] + compact('artistId');
+
+            $musicBoxes = [
+                $this->componentService->createLgText($artistName), // 歌手名
+                $this->componentService->createBtn('顯示歌手專輯', $data)
+            ];
+            $bodyBoxes  = [
+                $this->componentService->createImg($artistImg), // 歌手圖片
                 $this->componentService->createMusic($musicBoxes)
             ];
 
-            $body = $this->componentService->createBody($bodyBoxes);
+            $body      = $this->componentService->createBody($bodyBoxes);
             $bubbles[] = $this->componentService->createBubble($body);
         }
 
@@ -129,24 +146,38 @@ class MessageService
     }
 
     /**
-     * 建立專輯 flex message ( 透過關鍵字搜尋 or 顯示歌手專輯 )
+     * 建立專輯 flex message
      *
      * @param array $albums
      * @return FlexMessageBuilder
      */
-    public function createAlbumFlex(array $albums)
+    public function createAlbumFlexMessage(array $albums)
     {
         $bubbles = [];
 
         foreach ($albums as $album) {
-            $musicBoxes = [
-                $this->componentService->createLgText($album['albumName']), // 專輯名
-                $this->componentService->createSmText($album['artistName']), // 歌手名
-                $this->componentService->createBtn('顯示專輯歌曲', $album['postbackData'])
-            ];
+            $albumImg    = $album['images'][1]['url'] ?? '';
+            $territories = $album['available_territories'] ?? [];
 
-            $bodyBoxs = [
-                $this->componentService->createImg($album['albumImg']), // 專輯圖片
+            if (count($bubbles) >= 5) { // 只需要 5 組
+                break;
+            }
+            if (!$albumImg || !$territories || !in_array('TW', $territories)) { // 找不到符合尺寸的圖片或權限不包含 tw 就跳過
+                continue;
+            }
+
+            $albumId    = $album['id'];
+            $albumName  = $album['name'];
+            $artistName = $album['artist']['name'];
+            $data       = ['area' => 'flexMessage', 'type' => 'tracksInAlbum'] + compact('albumId', 'artistName', 'albumImg');
+
+            $musicBoxes = [
+                $this->componentService->createLgText($albumName), // 專輯名
+                $this->componentService->createSmText($artistName), // 歌手名
+                $this->componentService->createBtn('顯示專輯歌曲', $data)
+            ];
+            $bodyBoxs  = [
+                $this->componentService->createImg($albumImg), // 專輯圖片
                 $this->componentService->createMusic($musicBoxes)
             ];
 
@@ -164,7 +195,7 @@ class MessageService
      * @param string $url
      * @return AudioMessageBuilder
      */
-    public function createAudio(string $url)
+    public function createAudioMessage(string $url)
     {
         return new AudioMessageBuilder($url, 30 * 1000);
     }

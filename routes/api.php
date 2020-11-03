@@ -13,9 +13,11 @@ use Illuminate\Http\Request;
 |
 */
 
+/*
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
+*/
 
 // 給別人 call 的 API
-Route::match(['get', 'post'], '/production', 'RecordController@handle');
+Route::match(['get', 'post'], '/production', 'EventController@handle');

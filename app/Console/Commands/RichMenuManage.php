@@ -10,7 +10,7 @@ use Throwable;
 
 class RichMenuManage extends Command
 {
-    protected $signature = 'linebot:richmenu {action}';
+    protected $signature   = 'linebot:richmenu {action}';
     protected $description = '管理 Linebot Rich Menu';
 
     protected $richMenuService;
@@ -49,6 +49,8 @@ class RichMenuManage extends Command
                     $this->error('參數錯誤');
                     exit;
             }
+
+            $this->info('執行成功');
 
         } catch (Throwable $t) {
             Log::error($t);

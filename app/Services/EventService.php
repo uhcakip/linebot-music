@@ -2,10 +2,7 @@
 
 namespace App\Services;
 
-
-use App\Exceptions\CustomException;
 use App\Repos\RecordRepo;
-use Illuminate\Support\Facades\Log;
 use LINE\LINEBot\Event\FollowEvent;
 use LINE\LINEBot\Event\MessageEvent;
 use LINE\LINEBot\Event\MessageEvent\TextMessage;
@@ -14,20 +11,22 @@ use LINE\LINEBot\Event\PostbackEvent;
 class EventService
 {
     protected $recordRepo;
-    protected $messageService;
     protected $musicService;
-    protected $notFoundMsg;
+    protected $messageService;
 
-    public function __construct(RecordRepo $recordRepo, MessageService $messageService, MusicService $musicService)
+    public function __construct(RecordRepo $recordRepo, MusicService $musicService, MessageService $messageService)
     {
         // 注入
-        $this->recordRepo = $recordRepo;
+        $this->recordRepo     = $recordRepo;
+        $this->musicService   = $musicService;
         $this->messageService = $messageService;
-        $this->musicService = $musicService;
-
-        $this->notFoundMsg = $this->messageService->createText('找不到相關的音樂資訊');
     }
 
+    /**
+     * 處理 follow 事件
+     *
+     * @param FollowEvent $event
+     */
     public function handleFollowEvent(FollowEvent $event)
     {
         $record = $this->recordRepo->getRecords(['user' => $event->getUserId()], false)->first();
@@ -40,113 +39,84 @@ class EventService
         }
     }
 
-    public function handlePostbackEvent(PostbackEvent $event)
-    {
-        $record = $this->recordRepo->getRecords(['user' => $event->getUserId()], false)->first();
-        $pbData = json_decode($event->getPostbackData(), true);
-        $type = $pbData['type'];
-        $notFoundMsg = $this->messageService->createText('找不到相關的音樂資訊');
-
-        // 點選 rich menu 變更搜尋範圍
-        if (isset(RichMenuService::TYPES[$type])) {
-            if ($record->type !== $type) {
-                $this->recordRepo->update($record, ['type' => $type]);
-            }
-            exit;
-        }
-
-        // 點選 flex message 元件
-        switch ($type) {
-            case 'AlbumsOfArtist': // 顯示歌手專輯
-                $albums = $this->musicService->getAlbums($pbData['artistId']);
-                return $albums ? $this->messageService->createAlbumFlex($albums) : $notFoundMsg;
-
-            case 'tracksInAlbum': // 顯示專輯歌曲
-                $tracks = $this->musicService->getTracks($pbData['albumId']);
-                return $tracks ? $this->messageService->createFindTrackFlex($pbData, $tracks) : $notFoundMsg;
-
-            case 'preview': // 試聽
-                $musicUrl = saveMusic($pbData['trackId'], $pbData['previewUrl']);
-                return $this->messageService->createAudio($musicUrl);
-
-            default:
-                throw new CustomException(buildLogMsg('訊息建立失敗', writeJson(objToArr($event))));
-        }
-    }
-
+    /**
+     * 處理 message 事件
+     *
+     * @param MessageEvent $event
+     * @return \LINE\LINEBot\MessageBuilder\FlexMessageBuilder|\LINE\LINEBot\MessageBuilder\TextMessageBuilder
+     */
     public function handleMessageEvent(MessageEvent $event)
     {
         if (!$event instanceof TextMessage) {
-            return $this->messageService->createText('請輸入文字');
+            return $this->messageService->createTextMessage('請輸入文字');
         }
 
-        $record = $this->recordRepo->getRecords(['user' => $event->getUserId()], false)->first();
-        $results = $this->musicService->searchByKeyword($record->type, $event->getText());
+        $record  = $this->recordRepo->getRecords(['user' => $event->getUserId()], false)->first();
+        $keyword = $event->getText();
+
+        // 透過文字變更搜範圍
+        foreach (RichMenuService::TYPES as $type => $typeCh) {
+            if ($keyword === '變更搜尋範圍至' . $typeCh) {
+                $this->recordRepo->update($record, ['type' => $type]);
+                return $this->messageService->createTextMessage('已將搜尋範圍變更至' . $typeCh);
+            }
+        }
+
+        $results = $this->musicService->searchByKeyword($record->type, $keyword);
 
         if (!$results) {
-            return $this->messageService->createText('找不到相關的音樂資訊');
+            return $this->messageService->createTextMessage('找不到相關的音樂資訊');
         }
 
         switch ($record->type) {
             case 'artist':
-                // 統整歌手資訊
-                $artists = collect($results)->map(function ($result) {
-                    if (count($result['images'] ?? []) <= 0) {
-                        return [];
-                    }
-
-                    $artistImg = collect($result['images'])->whereIn('width', [300, 500])->first() ?: collect($result['images'])->where('width', 160)->first();
-                    $artistImg = $artistImg['url'];
-                    $artistId = $result['id'];
-                    $artistName = $result['name'];
-                    $postbackData = ['area' => 'flexMessage', 'type' => 'AlbumsOfArtist'] + compact('artistId');
-                    return compact('artistName', 'artistImg', 'postbackData');
-                });
-
-                //Log::info(buildLogMsg('歌手資訊', print_r($artists->all(), true)));
-                $take = $artists->count() > 5 ? 5 : $artists->count();
-                return $this->messageService->createArtistFlex($artists->filter()->take($take)->all());
+                return $this->messageService->createArtistFlexMessage($results);
 
             case 'track':
-                $tracks = collect($results)->map(function ($result) {
-                    if (count($result['album']['images'] ?? []) <= 0 || !in_array('TW', $result['available_territories'] ?? [])) {
-                        return [];
-                    }
-
-                    $albumImg = collect($result['album']['images'])->whereIn('width', [300, 500])->first() ?: collect($result['album']['images'])->where('width', 160)->first();
-                    $albumImg = $albumImg['url'];
-                    $trackId = $result['id'];
-                    $trackName = $result['name'];
-                    $artistName = $result['album']['artist']['name'];
-                    $previewUrl = getPreviewUrl($result['url']);
-                    $postbackData = ['area' => 'flexMessage', 'type' => 'preview'] + compact('trackId', 'previewUrl');
-                    return compact('trackName', 'artistName', 'albumImg', 'postbackData');
-                });
-
-                //Log::info(buildLogMsg('歌曲資訊', print_r($tracks->all(), true)));
-                $take = $tracks->count() > 5 ? 5 : $tracks->count();
-                return $this->messageService->createTrackFlex($tracks->filter()->take($take)->all());
+                return $this->messageService->createTrackFlexMessage($results);
 
             case 'album':
-                // 統整專輯資訊
-                $albums = collect($results)->map(function ($result) {
-                    if (count($result['images'] ?? []) <= 0 || !in_array('TW', $result['available_territories'] ?? [])) {
-                        return [];
-                    }
+                return $this->messageService->createAlbumFlexMessage($results);
+        }
+    }
 
-                    $albumImg = collect($result['images'])->whereIn('width', [300, 500])->first() ?: collect($result['images'])->where('width', 160)->first();
-                    $albumImg = $albumImg['url'];
-                    $albumId = $result['id'];
-                    $albumName = $result['name'];
-                    $artistName = $result['artist']['name'];
-                    $postbackData = ['area' => 'flexMessage', 'type' => 'tracksInAlbum'] + compact('albumId', 'artistName', 'albumImg');
+    /**
+     * 處理 postback 事件
+     *
+     * @param PostbackEvent $event
+     * @return \LINE\LINEBot\MessageBuilder\AudioMessageBuilder|\LINE\LINEBot\MessageBuilder\FlexMessageBuilder|\LINE\LINEBot\MessageBuilder\TextMessageBuilder
+     */
+    public function handlePostbackEvent(PostbackEvent $event)
+    {
+        $record = $this->recordRepo->getRecords(['user' => $event->getUserId()], false)->first();
+        $data   = json_decode($event->getPostbackData(), true);
+        $type   = $data['type'];
 
-                    return compact('albumId', 'albumName', 'albumImg', 'artistName', 'postbackData');
-                });
+        // 點選 rich menu
+        if ($data['area'] === 'richMenu') {
+            if (isset(RichMenuService::TYPES[$type]) && $record->type !== $type) { // 變更搜尋範圍
+                $this->recordRepo->update($record, ['type' => $type]);
+                exit;
+            }
+        }
 
-                //Log::info(buildLogMsg('專輯資訊', print_r($albums->all(), true)));
-                $take = $albums->count() > 5 ? 5 : $albums->count();
-                return $this->messageService->createAlbumFlex($albums->filter()->take($take)->all());
+        // 點選訊息元件
+        if ($data['area'] === 'flexMessage') {
+            $notFoundMsg = $this->messageService->createTextMessage('找不到相關的音樂資訊');
+
+            switch ($data['type']) {
+                case 'AlbumsOfArtist': // 顯示歌手專輯
+                    $albums = $this->musicService->getAlbumsByArtistId($data['artistId']);
+                    return $albums ? $this->messageService->createAlbumFlexMessage($albums) : $notFoundMsg;
+
+                case 'tracksInAlbum': // 顯示專輯歌曲
+                    $tracks = $this->musicService->getTracksByAlbumId($data['albumId']);
+                    return $tracks ? $this->messageService->createTrackFlexMessage($tracks, $data) : $notFoundMsg;
+
+                case 'preview': // 試聽
+                    $musicUrl = saveMusic($data['trackId'], $data['previewUrl']);
+                    return $this->messageService->createAudioMessage($musicUrl);
+            }
         }
     }
 }

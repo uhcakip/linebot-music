@@ -2,8 +2,6 @@
 
 namespace App\Services;
 
-use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\Log;
 use KKBOX\KKBOXOpenAPI\OpenAPI;
 use KKBOX\KKBOXOpenAPI\Territory;
 
@@ -18,7 +16,7 @@ class MusicService
     }
 
     /**
-     * 用關鍵字搜尋 ( 限定搜尋範圍 )
+     * 關鍵字搜尋 ( 限定搜尋範圍 )
      *
      * @param string $type
      * @param string $keyword
@@ -28,45 +26,36 @@ class MusicService
     {
         $response = $this->kkbox->search($keyword, [$type], Territory::Taiwan, 0, 20);
         $response = json_decode($response->getBody(), true);
-        $type .= 's';
+        $type    .= 's';
 
-        //Log::info(buildLogMsg('關鍵字搜尋 ' . $type, print_r($response, true)));
         return $response[$type]['data'];
     }
 
     /**
-     * 用 artist id 搜尋歌手專輯
+     * artist id 搜尋歌手專輯
      *
      * @param string $artistId
      * @return mixed
      */
-    public function getAlbums(string $artistId)
+    public function getAlbumsByArtistId(string $artistId)
     {
-        $response = $this->kkbox->fetchAlbumsOfArtist($artistId);
+        $response = $this->kkbox->fetchAlbumsOfArtist($artistId, Territory::Taiwan, 0, 20);
+        $albums   = json_decode($response->getBody(), true);
 
-        $results = json_decode($response->getBody())->data;
-        $results = collect($results)->filter(function ($result) { // 地區必須包含 TW 才有權限取得音樂資訊
-            return in_array('TW', $result->available_territories);
-        });
-
-        // 隨機取 5 張專輯
-        return $results->random($results->count() < 5 ? $results->count() : 5)->all();
+        return $albums['data'];
     }
 
     /**
-     * 用 album id 搜尋專輯歌曲
+     * album id 搜尋專輯歌曲
      *
      * @param string $albumId
      * @return array
      */
-    public function getTracks(string $albumId)
+    public function getTracksByAlbumId(string $albumId)
     {
         $response = $this->kkbox->fetchTracksInAlbum($albumId);
-        $result = json_decode($response->getBody())->data;
+        $tracks   = json_decode($response->getBody(), true);
 
-        Log::info(buildLogMsg('專輯 ID', writeJson($result)));
-
-        // 隨機取 5 首歌
-        return Arr::random($result, (count($result) < 5 ? count($result) : 5));
+        return $tracks['data'];
     }
 }

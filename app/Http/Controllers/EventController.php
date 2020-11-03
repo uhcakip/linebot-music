@@ -12,7 +12,7 @@ use LINE\LINEBot;
 use LINE\LINEBot\Constant\HTTPHeader;
 use LINE\LINEBot\HTTPClient\CurlHTTPClient;
 
-class RecordController extends Controller
+class EventController extends Controller
 {
     protected $eventService;
 
@@ -25,26 +25,26 @@ class RecordController extends Controller
         $this->eventService = $eventService;
 
         $this->httpClient = new CurlHTTPClient(config('bot.line_token'));
-        $this->lineBot = new LINEBot($this->httpClient, ['channelSecret' => config('bot.line_secret')]);
+        $this->lineBot    = new LINEBot($this->httpClient, ['channelSecret' => config('bot.line_secret')]);
     }
 
     public function handle(Request $request)
     {
         try {
-            $body = $request->getContent();
-            $header = $request->header(HTTPHeader::LINE_SIGNATURE);
-            $event = Arr::first($this->lineBot->parseEventRequest($body, $header));
+            $body    = $request->getContent();
+            $header  = $request->header(HTTPHeader::LINE_SIGNATURE);
+            $event   = Arr::first($this->lineBot->parseEventRequest($body, $header));
             $replyed = false;
 
             switch ($event->getType()) {
-                case 'postback':
-                    $replyMsg = $this->eventService->handlePostbackEvent($event);
-                    $replyed = $this->lineBot->replyMessage($event->getReplyToken(), $replyMsg);
-                    break;
-
                 case 'message':
                     $replyMsg = $this->eventService->handleMessageEvent($event);
-                    $replyed = $this->lineBot->replyMessage($event->getReplyToken(), $replyMsg);
+                    $replyed  = $this->lineBot->replyMessage($event->getReplyToken(), $replyMsg);
+                    break;
+
+                case 'postback':
+                    $replyMsg = $this->eventService->handlePostbackEvent($event);
+                    $replyed  = $this->lineBot->replyMessage($event->getReplyToken(), $replyMsg);
                     break;
 
                 case 'follow':
@@ -57,7 +57,7 @@ class RecordController extends Controller
             }
 
             if ($replyed && !$replyed->isSucceeded()) {
-                throw new CustomException(buildLogMsg('建立訊息失敗', $replyed->getRawBody()));
+                throw new CustomException(buildLogMsg('訊息建立失敗', $replyed->getRawBody()));
             }
 
         } catch (Exception $e) {

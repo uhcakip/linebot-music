@@ -2,8 +2,6 @@
 
 namespace App\Services;
 
-use App\Exceptions\CustomException;
-use Illuminate\Support\Facades\Log;
 use LINE\LINEBot;
 use LINE\LINEBot\HTTPClient\CurlHTTPClient;
 use LINE\LINEBot\RichMenuBuilder;
@@ -32,29 +30,28 @@ class RichMenuService
      */
     public function create()
     {
-        $size = new RichMenuSizeBuilder(self::HEIGHT, self::WIDTH);
-        $width = intval(self::WIDTH / count(self::TYPES)); // 以寬度為基準分成三個區塊
+        $size    = new RichMenuSizeBuilder(self::HEIGHT, self::WIDTH);
+        $width   = intval(self::WIDTH / count(self::TYPES)); // 以寬度為基準分成三個區塊
         $xOffset = 0;
-        $areas = [];
+        $areas   = [];
 
-        foreach (self::TYPES as $typeEn => $typeCh) {
+        foreach (self::TYPES as $type => $typeCh) {
             $text = '已將搜尋範圍變更至' . $typeCh;
-            $postbackData = writeJson(['area' => 'richMenu', 'type' => $typeEn]);
+            $data = writeJson(['area' => 'richMenu', 'type' => $type]);
 
-            $bound = new RichMenuAreaBoundsBuilder($xOffset, 0, $width, self::HEIGHT);
-            $action = new PostbackTemplateActionBuilder($typeEn, $postbackData, $text);
+            $bound   = new RichMenuAreaBoundsBuilder($xOffset, 0, $width, self::HEIGHT);
+            $action  = new PostbackTemplateActionBuilder($type, $data, $text);
             $areas[] = new RichMenuAreaBuilder($bound, $action);
 
             $xOffset += $width;
         }
 
-        $richMenu = new RichMenuBuilder($size, true, 'linebot-music', '變更搜尋範圍', $areas);
-        $response = $this->lineBot->createRichMenu($richMenu)->getJSONDecodedBody(); // create 完會回傳一組 richMenuId
+        $richMenu   = new RichMenuBuilder($size, true, 'linebot-music', '變更搜尋範圍', $areas);
+        $response   = $this->lineBot->createRichMenu($richMenu)->getJSONDecodedBody(); // create 完會回傳一組 richMenuId
         $richMenuId = $response['richMenuId'];
 
         $this->lineBot->uploadRichMenuImage($richMenuId, 'public/rich_menu_img/line-rich-menu.png', 'image/png');
         $this->lineBot->setDefaultRichMenuId($richMenuId); // 設為預設 rich menu ( 每個 user 的聊天介面都會顯示 )
-        return true;
     }
 
     /**
@@ -68,8 +65,6 @@ class RichMenuService
         foreach ($menus as $menu) {
             $this->lineBot->deleteRichMenu($menu['richMenuId']);
         }
-
-        return true;
     }
 
     /*
