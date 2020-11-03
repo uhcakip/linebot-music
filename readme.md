@@ -5,7 +5,7 @@
 
 ### 說明
 - 結合 Line Bot 及 KKBox
-- 點選 Rich Menu 限定搜尋範圍 ( 歌手名、專輯名、歌名 ) 並輸入關鍵字搜尋，機器人會回傳對應的音樂資訊 ( Flex Message ) 或試聽音檔 ( Audio Message )
+- 點選 Rich Menu 限定搜尋範圍並輸入關鍵字搜尋，機器人會回傳對應的音樂資訊 ( Flex Message ) 或試聽音檔 ( Audio Message )
 
 ### 開發環境
 - PHP 7.2 
