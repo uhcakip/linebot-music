@@ -15,14 +15,18 @@ class RichMenuService
     protected $httpClient;
     protected $lineBot;
 
-    const WIDTH = 2500;
+    const WIDTH  = 2500;
     const HEIGHT = 843;
-    const TYPES = ['artist' => '歌手', 'track'  => '歌曲', 'album'  => '專輯'];
+    const TYPES  = [
+        'artist' => '歌手',
+        'track'  => '歌曲',
+        'album'  => '專輯'
+    ];
 
     public function __construct()
     {
         $this->httpClient = new CurlHTTPClient(config('bot.line_token'));
-        $this->lineBot = new LINEBot($this->httpClient, ['channelSecret' => config('bot.line_secret')]);
+        $this->lineBot    = new LINEBot($this->httpClient, ['channelSecret' => config('bot.line_secret')]);
     }
 
     /**

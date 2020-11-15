@@ -69,14 +69,9 @@ class EventService
         }
 
         switch ($record->type) {
-            case 'artist':
-                return $this->messageService->createArtistFlexMessage($results);
-
-            case 'track':
-                return $this->messageService->createTrackFlexMessage($results);
-
-            case 'album':
-                return $this->messageService->createAlbumFlexMessage($results);
+            case 'artist': return $this->messageService->createArtistFlexMessage($results);
+            case 'track':  return $this->messageService->createTrackFlexMessage($results);
+            case 'album':  return $this->messageService->createAlbumFlexMessage($results);
         }
     }
 

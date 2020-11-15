@@ -34,17 +34,17 @@ class EventController extends Controller
             $body    = $request->getContent();
             $header  = $request->header(HTTPHeader::LINE_SIGNATURE);
             $event   = Arr::first($this->lineBot->parseEventRequest($body, $header));
-            $replyed = false;
+            $replied = false;
 
             switch ($event->getType()) {
                 case 'message':
                     $replyMsg = $this->eventService->handleMessageEvent($event);
-                    $replyed  = $this->lineBot->replyMessage($event->getReplyToken(), $replyMsg);
+                    $replied  = $this->lineBot->replyMessage($event->getReplyToken(), $replyMsg);
                     break;
 
                 case 'postback':
                     $replyMsg = $this->eventService->handlePostbackEvent($event);
-                    $replyed  = $this->lineBot->replyMessage($event->getReplyToken(), $replyMsg);
+                    $replied  = $this->lineBot->replyMessage($event->getReplyToken(), $replyMsg);
                     break;
 
                 case 'follow':
@@ -56,8 +56,8 @@ class EventController extends Controller
                     exit;
             }
 
-            if ($replyed && !$replyed->isSucceeded()) {
-                throw new CustomException(buildLogMsg('訊息建立失敗', $replyed->getRawBody()));
+            if ($replied && !$replied->isSucceeded()) {
+                throw new CustomException(buildLogMsg('訊息建立失敗', $replied->getRawBody()));
             }
 
         } catch (Exception $e) {
