@@ -15,13 +15,19 @@ class RichMenuService
     protected $httpClient;
     protected $lineBot;
 
+    // postback data
+    const RICH_MENU = 'richMenu';
+    const ARTIST    = 'artist';
+    const TRACK     = 'track';
+    const ALBUM     = 'album';
+    const TYPES     = [
+        self::ARTIST => '歌手',
+        self::TRACK  => '歌曲',
+        self::ALBUM  => '專輯'
+    ];
+
     const WIDTH  = 2500;
     const HEIGHT = 843;
-    const TYPES  = [
-        'artist' => '歌手',
-        'track'  => '歌曲',
-        'album'  => '專輯'
-    ];
 
     public function __construct()
     {
@@ -41,7 +47,7 @@ class RichMenuService
 
         foreach (self::TYPES as $type => $typeCh) {
             $text = '已將搜尋範圍變更至' . $typeCh;
-            $data = writeJson(['area' => 'richMenu', 'type' => $type]);
+            $data = writeJson(['area' => self::RICH_MENU, 'type' => $type]);
 
             $bound   = new RichMenuAreaBoundsBuilder($xOffset, 0, $width, self::HEIGHT);
             $action  = new PostbackTemplateActionBuilder($type, $data, $text);

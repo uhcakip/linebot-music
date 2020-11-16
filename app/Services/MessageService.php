@@ -8,6 +8,12 @@ use LINE\LINEBot\MessageBuilder\TextMessageBuilder;
 
 class MessageService
 {
+    // postback data
+    const FLEX_MESSAGE     = 'flexMessage';
+    const PREVIEW          = 'preview';
+    const ALBUMS_OF_ARTIST = 'AlbumsOfArtist';
+    const TRACKS_IN_ALBUM  = 'tracksInAlbum';
+
     protected $componentService;
 
     public function __construct(ComponentService $componentService)
@@ -72,7 +78,7 @@ class MessageService
             $trackName  = $track['name'];
             $artistName = $track['album']['artist']['name'];
             $previewUrl = getPreviewUrl($track['url']);
-            $data       = ['area' => 'flexMessage', 'type' => 'preview'] + compact('trackId', 'previewUrl');
+            $data       = ['area' => self::FLEX_MESSAGE, 'type' => self::PREVIEW] + compact('trackId', 'previewUrl');
 
             $musicBoxes = [
                 $this->componentService->createLgText($trackName), // 歌名
@@ -115,7 +121,7 @@ class MessageService
             $trackId    = $track['id'];
             $trackName  = $track['name'];
             $previewUrl = getPreviewUrl($track['url']);
-            $data       = ['area' => 'flexMessage', 'type' => 'preview'] + compact('trackId', 'previewUrl');
+            $data       = ['area' => self::FLEX_MESSAGE, 'type' => self::PREVIEW] + compact('trackId', 'previewUrl');
 
             $musicBoxes = [
                 $this->componentService->createLgText($trackName), // 歌名
@@ -155,7 +161,7 @@ class MessageService
             $artistId   = $artist['id'];
             $artistName = $artist['name'];
             $artistImg  = $artist['images'][1]['url'];
-            $data       = ['area' => 'flexMessage', 'type' => 'AlbumsOfArtist'] + compact('artistId');
+            $data       = ['area' => self::FLEX_MESSAGE, 'type' => self::ALBUMS_OF_ARTIST] + compact('artistId');
 
             $musicBoxes = [
                 $this->componentService->createLgText($artistName), // 歌手名
@@ -198,19 +204,19 @@ class MessageService
             $albumId    = $album['id'];
             $albumName  = $album['name'];
             $artistName = $album['artist']['name'];
-            $data       = ['area' => 'flexMessage', 'type' => 'tracksInAlbum'] + compact('albumId', 'artistName', 'albumImg');
+            $data       = ['area' => self::FLEX_MESSAGE, 'type' => self::TRACKS_IN_ALBUM] + compact('albumId', 'artistName', 'albumImg');
 
             $musicBoxes = [
                 $this->componentService->createLgText($albumName), // 專輯名
                 $this->componentService->createSmText($artistName), // 歌手名
                 $this->componentService->createBtn('顯示專輯歌曲', $data)
             ];
-            $bodyBoxs  = [
+            $bodyBoxes  = [
                 $this->componentService->createImg($albumImg), // 專輯圖片
                 $this->componentService->createMusic($musicBoxes)
             ];
 
-            $body = $this->componentService->createBody($bodyBoxs);
+            $body      = $this->componentService->createBody($bodyBoxes);
             $bubbles[] = $this->componentService->createBubble($body);
         }
 
