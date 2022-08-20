@@ -1,4 +1,4 @@
-## Music Bot
+## Music Bot ( 已關閉 )
 
 ### QR code
 ![linebot-music-qrcode](https://github.com/uhcakip/linebot-music/blob/master/storage/demo/linebot-music-qrcode.png?raw=true)
